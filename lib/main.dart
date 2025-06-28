@@ -1,227 +1,132 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'login_screen.dart'; // pastikan file ini ada
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  await Supabase.initialize(
+    url: 'https://wzrrcdpobmurcsxkabeu.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cnJjZHBvYm11cmNzeGthYmV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwOTAwODAsImV4cCI6MjA2NjY2NjA4MH0.c2haAReE4mK94riwtEvo7E_JaQduLn5cMryqXRbvZvU', // ganti dengan anon key kamu
+  );
+
+  runApp(const MyApp());
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'DompetKu',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) {
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session == null) {
+            return const LoginScreen(); // belum login
+          } else {
+            return const MyHomePage(title: 'DompetKu'); // sudah login
+          }
+        },
+        '/home': (context) => const MyHomePage(title: 'DompetKu'),
+      },
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
+  Future<void> fetchTransactionCount() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      print('Belum login');
+      return;
+    }
+
+    final response = await Supabase.instance.client
+        .from('transactions')
+        .select()
+        .eq('user_id', user.id);
+
+    setState(() {
+      _counter = response.length;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTransactionCount();
+  }
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      Supabase.instance.client.from('transactions').insert({
+        'user_id': user.id,
+        'tipe': 'masuk',
+        'metode': 'shopeepay',
+        'jumlah': 10000,
+        'deskripsi': 'Dummy transaksi',
+      });
+    }
+  }
+
+  void _logout() async {
+    await Supabase.instance.client.auth.signOut();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEEEEE),
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            onPressed: _logout,
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
+      body: Center(
         child: Column(
-          children: [
-            // Bagian Header
-            Container(
-              padding: const EdgeInsets.only(top: 60, bottom: 20),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFE91E63), Color(0xFFD81B60)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                  bottomRight: Radius.circular(40),
-                ),
-              ),
-              child: const Column(
-                children: [
-                  Text(
-                    "Hai, Selamat Datang Kembali",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    "Sign in sekarang",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Form Login
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  // Email
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Alamat Email",
-                      style: TextStyle(color: Colors.grey[800]),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      hintText: "Email",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Password
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Password",
-                      style: TextStyle(color: Colors.grey[800]),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "Password",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Checkbox(value: true, onChanged: (value) {}),
-                          const Text("Ingat saya"),
-                        ],
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text("Lupa password?"),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Tombol Login
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: () {
-                        final email = _emailController.text.trim();
-                        final password = _passwordController.text;
-
-                        if (email.isEmpty || password.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Email dan password wajib diisi."),
-                            ),
-                          );
-                        } else {
-                          // TODO: Tambahkan Supabase login nanti di sini
-                          print("Email: $email, Password: $password");
-                        }
-                      },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Tombol Google (dummy)
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        // TODO: Tambahkan login Google
-                      },
-                      icon: Image.network(
-                        "https://img.icons8.com/color/48/000000/google-logo.png",
-                        height: 24,
-                      ),
-                      label: const Text("Lanjutkan dengan Google"),
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Navigasi ke halaman register
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Belum mempunyai akun? "),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/register');
-                        },
-                        child: const Text(
-                          "Daftar",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-                  Container(
-                    height: 4,
-                    width: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ],
-              ),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('Jumlah transaksi di Supabase:'),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Tambah Dummy Transaksi',
+        child: const Icon(Icons.add),
       ),
     );
   }
