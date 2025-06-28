@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -10,9 +9,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Simulasi delay untuk pindah halaman (misalnya ke halaman daftar)
-    Future.delayed(Duration(seconds: 3), () {
-      // Navigator.pushReplacement(...) bisa diarahkan ke halaman berikutnya
+    // Setelah 3 detik, pindah ke login
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pushReplacementNamed(context, '/login');
     });
   }
 
@@ -31,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Center(
           child: Container(
             width: 315,
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -39,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'SELAMAT DATANG\nMY DOMPET APP',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -48,24 +47,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     color: Colors.black,
                   ),
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigasi ke halaman daftar
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey.shade300,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Daftar',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 20),
                 Container(
                   width: 60,
                   height: 6,

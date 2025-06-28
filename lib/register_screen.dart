@@ -1,70 +1,190 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
+
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
+  final _namaController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _konfirmasiController = TextEditingController();
+
+  bool _loading = false;
+
+  Future<void> _signUp() async {
+    final nama = _namaController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final konfirmasi = _konfirmasiController.text.trim();
+
+    if (password != konfirmasi) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password tidak cocok.")),
+      );
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      final user = response.user;
+      if (user != null) {
+        // Simpan nama ke tabel 'users' sesuai ID
+        await Supabase.instance.client.from('users').insert({
+          'id': user.id,
+          'nama': nama,
+          'email': email,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Berhasil mendaftar! Silakan login.")),
+        );
+
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal daftar: $e")),
+      );
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _konfirmasiController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFCE4EC),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const SizedBox(height: 50),
+            // Header
             Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
               decoration: const BoxDecoration(
-                color: Colors.pink,
+                color: Color(0xFFD81B60),
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
               ),
-              padding: const EdgeInsets.all(20),
-              width: double.infinity,
               child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text('Masukkan email Anda', style: TextStyle(color: Colors.white)),
-                  Text(
-                    'Kami akan mengirimkan email untuk reset password',
-                    style: TextStyle(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            const TextField(decoration: InputDecoration(labelText: 'Nama Pengguna')),
-            const TextField(obscureText: true, decoration: InputDecoration(labelText: 'Buat password baru')),
-            const TextField(obscureText: true, decoration: InputDecoration(labelText: 'Konfirmasi password')),
-            const SizedBox(height: 10),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Password harus mempunyai:',
-                    style: TextStyle(color: Colors.green),
+                    'Masukkan email Anda',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Text('✔️ 8 sampai 20 huruf yang kuat'),
-                  Text('✔️ Huruf, angka, dan karakter khusus yang kreatif'),
+                  SizedBox(height: 8),
+                  Text(
+                    'Masukkan email yang terkait dengan akun Anda dan kami akan mengirimkan email berisi kode untuk mengatur ulang kata sandi Anda',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // kembali ke login
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueGrey[300],
-                minimumSize: const Size(double.infinity, 40),
+
+            // Form
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  _buildInput("Nama Pengguna", "Nama",
+                      controller: _namaController),
+                  _buildInput("Password baru", "Buat password baru",
+                      controller: _passwordController, obscure: true),
+                  _buildInput("Konfirmasi password", "Konfirmasi password",
+                      controller: _konfirmasiController, obscure: true),
+                  _buildInput("Email", "Masukkan Email",
+                      controller: _emailController),
+
+                  const SizedBox(height: 30),
+
+                  // Tombol Sign Up
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _loading ? null : _signUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _loading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Sign Up",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+                  Container(
+                    width: 60,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  )
+                ],
               ),
-              child: const Text('Sign Up'),
-            ),
+            )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInput(String label, String hint,
+      {bool obscure = false, TextEditingController? controller}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
     );

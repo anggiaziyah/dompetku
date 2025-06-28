@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login_screen.dart'; // pastikan file ini ada
+
+// Import halaman
+import 'login_screen.dart';
+import 'splash_screen.dart';
+import 'register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,7 +12,7 @@ void main() async {
   await Supabase.initialize(
     url: 'https://wzrrcdpobmurcsxkabeu.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cnJjZHBvYm11cmNzeGthYmV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwOTAwODAsImV4cCI6MjA2NjY2NjA4MH0.c2haAReE4mK94riwtEvo7E_JaQduLn5cMryqXRbvZvU', // ganti dengan anon key kamu
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cnJjZHBvYm11cmNzeGthYmV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwOTAwODAsImV4cCI6MjA2NjY2NjA4MH0.c2haAReE4mK94riwtEvo7E_JaQduLn5cMryqXRbvZvU',
   );
 
   runApp(const MyApp());
@@ -21,20 +25,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DompetKu',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: '/splash',
       routes: {
-        '/': (context) {
-          final session = Supabase.instance.client.auth.currentSession;
-          if (session == null) {
-            return const LoginScreen(); // belum login
-          } else {
-            return const MyHomePage(title: 'DompetKu'); // sudah login
-          }
-        },
+        '/splash': (context) => SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const SignupScreen(),
         '/home': (context) => const MyHomePage(title: 'DompetKu'),
       },
     );
@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _logout() async {
     await Supabase.instance.client.auth.signOut();
     if (mounted) {
-      Navigator.pushReplacementNamed(context, '/');
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
