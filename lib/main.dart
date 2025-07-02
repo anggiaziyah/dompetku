@@ -1,10 +1,16 @@
+import 'package:dompetku/kirim_screen.dart';
+import 'package:dompetku/success_screen.dart';
+import 'package:dompetku/topup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Import halaman
-import 'login_screen.dart';
+// Import semua screen
 import 'splash_screen.dart';
+import 'login_screen.dart';
 import 'register_screen.dart';
+import 'dashboard_screen.dart';
+import 'settings_screen.dart';
+import 'pesan_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +42,12 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const SignupScreen(),
         '/home': (context) => const MyHomePage(title: 'DompetKu'),
+        '/dashboard': (context) => DashboardScreen(),
+        '/kirim': (context) => KirimScreen(),
+        '/topup': (context) => TopupScreen(),
+        '/settings': (context) => SettingsScreen(),
+        '/pesan': (context) => PesanScreen(),
+        '/success': (context) => SuccessScreen(amount: '',),
       },
     );
   }
@@ -112,15 +124,42 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('Jumlah transaksi di Supabase:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text('Jumlah transaksi di Supabase:'),
+              Text(
+                '$_counter',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/topup'),
+                child: const Text('Topup'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/kirim'),
+                child: const Text('Kirim'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/dashboard'),
+                child: const Text('Dashboard'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+                child: const Text('Settings'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/pesan'),
+                child: const Text('Pesan'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/success'),
+                child: const Text('Success'),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
