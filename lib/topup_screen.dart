@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class TopUpScreen extends StatefulWidget {
+class TopupScreen extends StatefulWidget {
   @override
-  _TopUpScreenState createState() => _TopUpScreenState();
+  _TopupScreenState createState() => _TopupScreenState();
 }
 
-class _TopUpScreenState extends State<TopUpScreen> {
+class _TopupScreenState extends State<TopupScreen> {
   String _amount = '';
 
   void _onKeyPressed(String value) {
