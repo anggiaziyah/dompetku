@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dashboard_screen.dart'; // Import dashboard
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Bagian Header
             Container(
               padding: const EdgeInsets.only(top: 60, bottom: 20),
               width: double.infinity,
@@ -34,40 +34,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Text(
                     "Hai , Selamat Datang Kembali",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   Text(
                     "Sign in sekarang",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.white70),
                   ),
                 ],
               ),
             ),
-
-            // Form Login
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Alamat Email",
-                        style: TextStyle(color: Colors.grey[800])),
+                    child: Text("Alamat Email", style: TextStyle(color: Colors.grey[800])),
                   ),
                   const SizedBox(height: 6),
                   const TextField(
                     decoration: InputDecoration(
                       hintText: "Email",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                       filled: true,
                       fillColor: Colors.white,
                     ),
@@ -75,17 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Password",
-                        style: TextStyle(color: Colors.grey[800])),
+                    child: Text("Password", style: TextStyle(color: Colors.grey[800])),
                   ),
                   const SizedBox(height: 6),
                   const TextField(
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: "Password",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                       filled: true,
                       fillColor: Colors.white,
                     ),
@@ -111,29 +96,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueGrey[200],
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      onPressed: () {},
-                      child: const Text("Login",
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: Image.network(
-                        "https://img.icons8.com/color/48/000000/google-logo.png",
-                        height: 24,
-                      ),
-                      label: const Text("Lanjutkan dengan Google"),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                        );
+                      },
+                      child: const Text("Login", style: TextStyle(color: Colors.white)),
                     ),
                   ),
                   const SizedBox(height: 20),
