@@ -4,7 +4,7 @@ import 'dashboard_screen.dart';
 class SuccessScreen extends StatefulWidget {
   final String amount;
 
-  const SuccessScreen.SuccessScreen({super.key, required this.amount});
+  const SuccessScreen({super.key, required this.amount});
 
   @override
   State<SuccessScreen> createState() => _SuccessScreenState();
@@ -18,7 +18,6 @@ class _SuccessScreenState extends State<SuccessScreen> {
       body: Column(
         children: [
           const SizedBox(height: 60),
-          // Tombol Panah Kembali
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -39,19 +38,13 @@ class _SuccessScreenState extends State<SuccessScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
-          // Checkmark hijau
           const CircleAvatar(
             radius: 30,
             backgroundColor: Colors.white,
             child: Icon(Icons.check_circle, color: Colors.green, size: 40),
           ),
-
           const SizedBox(height: 20),
-
-          // Box Putih
           Expanded(
             child: Container(
               width: double.infinity,
@@ -91,11 +84,12 @@ class _SuccessScreenState extends State<SuccessScreen> {
                   Text(
                     "Rp ${widget.amount}",
                     style: const TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Info Pengguna
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -120,8 +114,6 @@ class _SuccessScreenState extends State<SuccessScreen> {
               ),
             ),
           ),
-
-          // Tombol Kembali ke Beranda
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: SizedBox(

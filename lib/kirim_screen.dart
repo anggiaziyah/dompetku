@@ -9,18 +9,18 @@ class _DompetDigitalAppState extends State<DompetDigitalApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: TransferPage(),
+      home: KirimScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class TransferPage extends StatefulWidget {
+class KirimScreen extends StatefulWidget {
   @override
-  _TransferPageState createState() => _TransferPageState();
+  _KirimScreenState createState() => _KirimScreenState();
 }
 
-class _TransferPageState extends State<TransferPage> {
+class _KirimScreenState extends State<KirimScreen> {
   String selectedBank = 'GoPay';
 
   final List<String> banks = ['GoPay', 'ShopeePay', 'DANA'];
