@@ -4,7 +4,12 @@ void main() {
   runApp(DompetDigitalApp());
 }
 
-class DompetDigitalApp extends StatelessWidget {
+class DompetDigitalApp extends StatefulWidget {
+  @override
+  State<DompetDigitalApp> createState() => _DompetDigitalAppState();
+}
+
+class _DompetDigitalAppState extends State<DompetDigitalApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
