@@ -1,55 +1,52 @@
 import 'package:flutter/material.dart';
 
-class DashboardScreen
- extends StatefulWidget {
-  @override
-  _DashboardScreenState createState() => _DashboardScreenState();
-}
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
 
-class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFFFEEEEE),
       body: Column(
         children: [
+          // Header Saldo
           Container(
-            padding: EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 20),
-            decoration: BoxDecoration(
-              color: Colors.pink.shade600,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(25),
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE91E63),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
               ),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Rp 325.550.000',
+                const SizedBox(height: 40),
+                const Text(
+                  "Rp 325.550.000",
                   style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 5),
-                Text(
-                  'Saldo tersedia',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                const Text(
+                  "Saldo tersedia",
+                  style: TextStyle(color: Colors.white70),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    actionButton(Icons.send, 'Kirimmmmmmmmmm'),
-                    actionButton(Icons.add, 'Isi Ulang'),
-                    actionButton(Icons.receipt, 'Tagihan'),
-                    actionButton(Icons.more_horiz, 'Lebih'),
+                    _DashboardIcon(
+                        title: "Kirim", icon: Icons.send, onTap: () {}),
+                    _DashboardIcon(
+                        title: "Isi Ulang", icon: Icons.add, onTap: () {}),
+                    _DashboardIcon(
+                        title: "Pesan", icon: Icons.message, onTap: () {}),
+                    _DashboardIcon(
+                        title: "Lebih", icon: Icons.more_horiz, onTap: () {}),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -57,110 +54,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Riwayat Transaksi
           Expanded(
             child: ListView(
-              padding: EdgeInsets.all(20),
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Riwayat Transaksi',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      'Lihat semua',
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                transactionTile('Menerima', 'Fiver', 'Rp 200.000'),
-                transactionTile('Kirim', 'Shoope', 'Rp 35.000'),
-                transactionTile('Menerima', 'Fiver1', '\$100.00 | 13.00 WIB'),
-                SizedBox(height: 16),
-                historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
-                historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
+              padding: const EdgeInsets.all(20),
+              children: const [
+                Text("Riwayat Transaksi",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                SizedBox(height: 10),
+                _TransactionItem(
+                    title: "Fiver", amount: "Rp200.000", type: "Menerima"),
+                _TransactionItem(
+                    title: "Shoope", amount: "Rp35.000", type: "Kirim"),
+                _TransactionItem(
+                    title: "Fiver1", amount: "\$100.00", type: "Menerima"),
+                _TransactionItem(
+                    title: "Devon Lane", amount: "\$1.200", type: "Transfer"),
+                _TransactionItem(
+                    title: "Esther Howard",
+                    amount: "\$1.200",
+                    type: "Transfer"),
               ],
             ),
           ),
         ],
       ),
-
-      // Bottom Navigation
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
-          ),
-        ],
-      ),
     );
   }
+}
 
-  Widget actionButton(IconData icon, String label) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.white,
-          child: Icon(icon, color: Colors.pink),
-        ),
-        SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(color: Colors.white),
-        )
-      ],
-    );
-  }
+class _DashboardIcon extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
 
-  Widget transactionTile(String type, String name, String amount) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Icon(
-          type == 'Menerima' ? Icons.call_received : Icons.call_made,
-          color: type == 'Menerima' ? Colors.green : Colors.red,
-        ),
-        title: Text('$type'),
-        subtitle: Text(name),
-        trailing: Text(
-          amount,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
+  const _DashboardIcon(
+      {required this.title, required this.icon, required this.onTap});
 
-  Widget historyItem(String name, String amount, String time) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.grey.shade300,
-      ),
-      title: Text(name),
-      subtitle: Text('Transfer'),
-      trailing: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
         children: [
-          Text(
-            amount,
-            style: TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
+          CircleAvatar(
+            backgroundColor: Colors.white,
+            child: Icon(icon, color: Colors.pink),
           ),
-          SizedBox(height: 4),
-          Text(time, style: TextStyle(fontSize: 12)),
+          const SizedBox(height: 6),
+          Text(title, style: const TextStyle(color: Colors.white)),
         ],
+      ),
+    );
+  }
+}
+
+class _TransactionItem extends StatelessWidget {
+  final String title;
+  final String amount;
+  final String type;
+
+  const _TransactionItem(
+      {required this.title, required this.amount, required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(type),
+        subtitle: Text(title),
+        trailing: Text(amount),
       ),
     );
   }
