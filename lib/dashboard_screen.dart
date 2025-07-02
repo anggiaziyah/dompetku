@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'kirim_screen.dart';
+import 'topup_screen.dart';
+import 'success_screen.dart';
+import 'settings_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -6,122 +10,93 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEEEEE),
-      body: Column(
-        children: [
-          // Header Saldo
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE91E63),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
+      appBar: AppBar(
+        title: const Text('DompetKu Dashboard'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20,
+          children: [
+            _buildMenuItem(
+              context,
+              icon: Icons.send,
+              label: 'Kirim',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => KirimScreen()),
+                );
+              },
             ),
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
-                const Text(
-                  "Rp 325.550.000",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
-                ),
-                const Text(
-                  "Saldo tersedia",
-                  style: TextStyle(color: Colors.white70),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _DashboardIcon(
-                        title: "Kirim", icon: Icons.send, onTap: () {}),
-                    _DashboardIcon(
-                        title: "Isi Ulang", icon: Icons.add, onTap: () {}),
-                    _DashboardIcon(
-                        title: "Pesan", icon: Icons.message, onTap: () {}),
-                    _DashboardIcon(
-                        title: "Lebih", icon: Icons.more_horiz, onTap: () {}),
-                  ],
-                ),
-              ],
+            _buildMenuItem(
+              context,
+              icon: Icons.account_balance_wallet,
+              label: 'Isi Ulang',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => TopupScreen()),
+                );
+              },
             ),
-          ),
-
-          // Riwayat Transaksi
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: const [
-                Text("Riwayat Transaksi",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                SizedBox(height: 10),
-                _TransactionItem(
-                    title: "Fiver", amount: "Rp200.000", type: "Menerima"),
-                _TransactionItem(
-                    title: "Shoope", amount: "Rp35.000", type: "Kirim"),
-                _TransactionItem(
-                    title: "Fiver1", amount: "\$100.00", type: "Menerima"),
-                _TransactionItem(
-                    title: "Devon Lane", amount: "\$1.200", type: "Transfer"),
-                _TransactionItem(
-                    title: "Esther Howard",
-                    amount: "\$1.200",
-                    type: "Transfer"),
-              ],
+            _buildMenuItem(
+              context,
+              icon: Icons.message,
+              label: 'Pesan',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SuccessScreen(amount: '20000'),
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+            _buildMenuItem(
+              context,
+              icon: Icons.settings,
+              label: 'Settings',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-class _DashboardIcon extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _DashboardIcon(
-      {required this.title, required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMenuItem(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.white,
-            child: Icon(icon, color: Colors.pink),
-          ),
-          const SizedBox(height: 6),
-          Text(title, style: const TextStyle(color: Colors.white)),
-        ],
-      ),
-    );
-  }
-}
-
-class _TransactionItem extends StatelessWidget {
-  final String title;
-  final String amount;
-  final String type;
-
-  const _TransactionItem(
-      {required this.title, required this.amount, required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(type),
-        subtitle: Text(title),
-        trailing: Text(amount),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.deepPurple.shade100,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: Colors.deepPurple),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
