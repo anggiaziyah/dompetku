@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // Import halaman
 import 'Screen/auth/login_screen.dart';
 import 'Screen/splash/splash_screen.dart';
-import 'Screen/auth/register_screen.dart';
+import 'Screen/auth/signup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
