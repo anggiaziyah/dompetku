@@ -1,26 +1,23 @@
+// lib/main.dart
+
+import 'package:dompetku/dashboard_screen.dart';
 import 'package:dompetku/kirim_screen.dart';
-import 'package:dompetku/success_screen.dart';
-import 'package:dompetku/topup_screen.dart';
+import 'package:dompetku/login_screen.dart';
+import 'package:dompetku/register_screen.dart';
+import 'package:dompetku/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Import semua screen
-import 'splash_screen.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
-import 'dashboard_screen.dart';
-import 'settings_screen.dart';
-import 'pesan_screen.dart';
-
 void main() async {
+  // Pastikan semua widget siap sebelum menjalankan aplikasi
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Inisialisasi Supabase
   await Supabase.initialize(
     url: 'https://wzrrcdpobmurcsxkabeu.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6cnJjZHBvYm11cmNzeGthYmV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwOTAwODAsImV4cCI6MjA2NjY2NjA4MH0.c2haAReE4mK94riwtEvo7E_JaQduLn5cMryqXRbvZvU',
   );
-
   runApp(const MyApp());
 }
 
@@ -33,140 +30,25 @@ class MyApp extends StatelessWidget {
       title: 'DompetKu',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink.shade600),
         useMaterial3: true,
-      ),
-      initialRoute: '/splash',
-      routes: {
-        '/splash': (context) => SplashScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const SignupScreen(),
-        '/home': (context) => const MyHomePage(title: 'DompetKu'),
-        '/dashboard': (context) => DashboardScreen(),
-        '/kirim': (context) => KirimScreen(),
-        '/topup': (context) => TopupScreen(),
-        '/settings': (context) => SettingsScreen(),
-        '/pesan': (context) => PesanScreen(),
-        '/success': (context) => SuccessScreen(amount: '',),
-      },
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  Future<void> fetchTransactionCount() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) {
-      print('Belum login');
-      return;
-    }
-
-    final response = await Supabase.instance.client
-        .from('transactions')
-        .select()
-        .eq('user_id', user.id);
-
-    setState(() {
-      _counter = response.length;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchTransactionCount();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user != null) {
-      Supabase.instance.client.from('transactions').insert({
-        'user_id': user.id,
-        'tipe': 'masuk',
-        'metode': 'shopeepay',
-        'jumlah': 10000,
-        'deskripsi': 'Dummy transaksi',
-      });
-    }
-  }
-
-  void _logout() async {
-    await Supabase.instance.client.auth.signOut();
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text('Jumlah transaksi di Supabase:'),
-              Text(
-                '$_counter',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/topup'),
-                child: const Text('Topup'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/kirim'),
-                child: const Text('Kirim'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/dashboard'),
-                child: const Text('Dashboard'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/settings'),
-                child: const Text('Settings'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/pesan'),
-                child: const Text('Pesan'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/success'),
-                child: const Text('Success'),
-              ),
-            ],
-          ),
+        scaffoldBackgroundColor: Colors.grey.shade100,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.pink.shade600,
+          foregroundColor: Colors.white,
+          elevation: 0,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Tambah Dummy Transaksi',
-        child: const Icon(Icons.add),
-      ),
+      // Rute awal saat aplikasi pertama kali dibuka
+      initialRoute: '/',
+      // Daftar semua rute (halaman) yang ada di aplikasi
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const SignupScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+        '/kirim': (context) => const TransferPage(),
+      },
     );
   }
 }

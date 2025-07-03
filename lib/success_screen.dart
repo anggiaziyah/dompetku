@@ -26,7 +26,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                    MaterialPageRoute(builder: (_) => DashboardScreen()),
                     (route) => false,
                   );
                 },
@@ -123,7 +123,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                    MaterialPageRoute(builder: (_) => DashboardScreen()),
                     (route) => false,
                   );
                 },

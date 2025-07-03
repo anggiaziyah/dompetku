@@ -1,6 +1,11 @@
+// lib/splash_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -9,10 +14,28 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Setelah 3 detik, pindah ke login
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/login');
+    // Tunggu frame pertama selesai render sebelum navigasi
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthAndNavigate();
     });
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    // Beri jeda agar splash screen terlihat
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Cek sesi pengguna saat ini di Supabase
+    final session = Supabase.instance.client.auth.currentSession;
+
+    if (!mounted) return; // Pastikan widget masih ada di tree
+
+    if (session != null) {
+      // Jika ada sesi, langsung ke dashboard
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      // Jika tidak ada sesi, ke halaman login
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
@@ -35,11 +58,11 @@ class _SplashScreenState extends State<SplashScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Column(
+            child: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'SELAMAT DATANG\nMY DOMPET APP',
+                Text(
+                  'SELAMAT DATANG\nDI DOMPETKU',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -47,17 +70,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 20),
-                const CircularProgressIndicator(),
-                const SizedBox(height: 20),
-                Container(
-                  width: 60,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                )
+                SizedBox(height: 20),
+                CircularProgressIndicator(),
+                SizedBox(height: 20),
               ],
             ),
           ),

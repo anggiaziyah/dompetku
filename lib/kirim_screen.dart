@@ -1,41 +1,38 @@
 import 'package:flutter/material.dart';
 
-class DompetDigitalApp extends StatefulWidget {
+class TransferPage extends StatefulWidget {
+  const TransferPage({super.key});
+
   @override
-  State<DompetDigitalApp> createState() => _DompetDigitalAppState();
+  _TransferPageState createState() => _TransferPageState();
 }
 
-class _DompetDigitalAppState extends State<DompetDigitalApp> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: KirimScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class KirimScreen extends StatefulWidget {
-  @override
-  _KirimScreenState createState() => _KirimScreenState();
-}
-
-class _KirimScreenState extends State<KirimScreen> {
+class _TransferPageState extends State<TransferPage> {
   String selectedBank = 'GoPay';
-
   final List<String> banks = ['GoPay', 'ShopeePay', 'DANA'];
+  String amount = 'Rp 5.000.000'; // Contoh data
+
+  void _onKeyPress(String value) {
+    // Logika untuk keypad bisa ditambahkan di sini
+    print("Key pressed: $value");
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFFF1F3),
+      appBar: AppBar(
+        title: const Text('Kirim Uang'),
+        backgroundColor: Colors.pink.shade600,
+        foregroundColor: Colors.white,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               // Bagian penerima
-              Column(
+              const Column(
                 children: [
                   Icon(Icons.person, size: 40),
                   Text("Anilin",
@@ -48,15 +45,16 @@ class _KirimScreenState extends State<KirimScreen> {
               ),
 
               // Jumlah
-              Text("ATM", style: TextStyle(fontSize: 16)),
-              Text("Rp 5.000.000",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-
-              SizedBox(height: 20),
+              const Text("Jumlah Transfer", style: TextStyle(fontSize: 16)),
+              Text(amount,
+                  style: const TextStyle(
+                      fontSize: 28, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
 
               // Dropdown Bank
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -81,15 +79,17 @@ class _KirimScreenState extends State<KirimScreen> {
                 ),
               ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Keypad
               Expanded(
                 child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: 12,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
-                    childAspectRatio: 2,
+                    childAspectRatio: 1.8,
                   ),
                   itemBuilder: (context, index) {
                     String text = '';
@@ -98,9 +98,10 @@ class _KirimScreenState extends State<KirimScreen> {
                     if (index == 10) text = '0';
                     if (index == 11) text = '⌫';
                     return InkWell(
-                      onTap: () {},
+                      onTap: () => _onKeyPress(text),
+                      borderRadius: BorderRadius.circular(30),
                       child: Center(
-                          child: Text(text, style: TextStyle(fontSize: 24))),
+                          child: Text(text, style: const TextStyle(fontSize: 24))),
                     );
                   },
                 ),
@@ -109,15 +110,17 @@ class _KirimScreenState extends State<KirimScreen> {
               // Tombol Kirim
               ElevatedButton(
                 onPressed: () {
-                  // aksi kirim
+                  // Aksi kirim
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Fitur kirim sedang dalam pengembangan.')));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade200,
-                  minimumSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text("Kirim", style: TextStyle(fontSize: 18)),
+                child: const Text("Kirim", style: TextStyle(fontSize: 18)),
               ),
             ],
           ),

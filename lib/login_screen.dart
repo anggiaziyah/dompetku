@@ -1,5 +1,7 @@
+// lib/login_screen.dart
+
 import 'package:flutter/material.dart';
-import 'dashboard_screen.dart'; // Import dashboard
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,6 +11,58 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (mounted) {
+        // Jika berhasil, navigasi ke dashboard
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.message),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Terjadi kesalahan tak terduga.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ));
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,12 +87,19 @@ class _LoginScreenState extends State<LoginScreen> {
               child: const Column(
                 children: [
                   Text(
-                    "Hai , Selamat Datang Kembali",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    "Hai, Selamat Datang Kembali",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   Text(
                     "Sign in sekarang",
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
                   ),
                 ],
               ),
@@ -49,62 +110,56 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Alamat Email", style: TextStyle(color: Colors.grey[800])),
+                    child: Text("Alamat Email",
+                        style: TextStyle(color: Colors.grey[800])),
                   ),
                   const SizedBox(height: 6),
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
                       hintText: "Email",
-                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                     ),
+                    keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Password", style: TextStyle(color: Colors.grey[800])),
+                    child: Text("Password",
+                        style: TextStyle(color: Colors.grey[800])),
                   ),
                   const SizedBox(height: 6),
-                  const TextField(
+                  TextField(
+                    controller: _passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: "Password",
-                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(children: [
-                        Checkbox(value: true, onChanged: (value) {}),
-                        const Text("Ingat saya"),
-                      ]),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text("Lupa password?"),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueGrey[200],
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                        );
-                      },
-                      child: const Text("Login", style: TextStyle(color: Colors.white)),
+                      onPressed: _isLoading ? null : _login,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("Login",
+                              style: TextStyle(color: Colors.white)),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -122,15 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    height: 4,
-                    width: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
                   ),
                 ],
               ),
