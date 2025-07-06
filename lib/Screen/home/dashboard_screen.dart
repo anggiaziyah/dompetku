@@ -1,12 +1,74 @@
+import 'package:dompetku/Screen/transaksi/kirim_screen.dart';
+import 'package:dompetku/lebih_screen.dart';
+import 'package:dompetku/pesan_screen.dart';
+import 'package:dompetku/topup_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class DashboardScreen
- extends StatefulWidget {
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  int _selectedIndex = 0;
+
+  Future<void> _signOut() async {
+    await Supabase.instance.client.auth.signOut();
+    if (mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/riwayat');
+        break;
+      case 2:
+        _showProfileActions();
+        break;
+    }
+  }
+
+  void _showProfileActions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Lihat Profil'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Navigasi ke halaman Profil')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _signOut();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,17 +76,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: Column(
         children: [
           Container(
-            padding: EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 20),
+            padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 20),
             decoration: BoxDecoration(
               color: Colors.pink.shade600,
-              borderRadius: BorderRadius.vertical(
+              borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(25),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Rp 325.550.000',
                   style: TextStyle(
                     fontSize: 28,
@@ -32,51 +94,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 5),
-                Text(
+                const SizedBox(height: 5),
+                const Text(
                   'Saldo tersedia',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    actionButton(Icons.send, 'Kirimmmmmmmmmm'),
-                    actionButton(Icons.add, 'Isi Ulang'),
-                    actionButton(Icons.receipt, 'Tagihan'),
-                    actionButton(Icons.more_horiz, 'Lebih'),
+                    actionButton(Icons.send, 'Kirim', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => KirimScreen()),
+                      );
+                    }),
+                    actionButton(Icons.account_balance_wallet, 'Top Up', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TopUpScreen()),
+                      );
+                    }),
+                    actionButton(Icons.message, 'Pesan', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => PesanScreen()),
+                      );
+                    }),
+                    actionButton(Icons.more_horiz, 'Lebih', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LebihScreen()),
+                      );
+                    }),
                   ],
                 )
               ],
             ),
           ),
-
-          // Riwayat Transaksi
           Expanded(
             child: ListView(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Riwayat Transaksi',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      'Lihat semua',
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ],
+                const Text(
+                  'Riwayat Transaksi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 transactionTile('Menerima', 'Fiver', 'Rp 200.000'),
                 transactionTile('Kirim', 'Shoope', 'Rp 35.000'),
                 transactionTile('Menerima', 'Fiver1', '\$100.00 | 13.00 WIB'),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
                 historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
               ],
@@ -84,58 +155,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-
-      // Bottom Navigation
       bottomNavigationBar: BottomNavigationBar(
-        items: [
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: '',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: '',
+            icon: Icon(Icons.list_alt),
+            label: 'Riwayat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: '',
+            label: 'Profil',
           ),
         ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.pink.shade600,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
 
-  Widget actionButton(IconData icon, String label) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.white,
-          child: Icon(icon, color: Colors.pink),
+  Widget actionButton(IconData icon, String label, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(30),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.white,
+              child: Icon(icon, color: Colors.pink),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white),
+            )
+          ],
         ),
-        SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(color: Colors.white),
-        )
-      ],
+      ),
     );
   }
 
   Widget transactionTile(String type, String name, String amount) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: Icon(
           type == 'Menerima' ? Icons.call_received : Icons.call_made,
           color: type == 'Menerima' ? Colors.green : Colors.red,
         ),
-        title: Text('$type'),
+        title: Text(type),
         subtitle: Text(name),
         trailing: Text(
           amount,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -147,19 +227,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Colors.grey.shade300,
       ),
       title: Text(name),
-      subtitle: Text('Transfer'),
+      subtitle: const Text('Transfer'),
       trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
             amount,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.green,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 4),
-          Text(time, style: TextStyle(fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(time, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );

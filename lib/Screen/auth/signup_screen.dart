@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -16,12 +15,21 @@ class _SignupScreenState extends State<SignupScreen> {
   final _konfirmasiController = TextEditingController();
 
   bool _loading = false;
+  bool _obscurePassword = true;
+  bool _obscureKonfirmasi = true;
 
   Future<void> _signUp() async {
     final nama = _namaController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final konfirmasi = _konfirmasiController.text.trim();
+
+    if (nama.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Semua field harus diisi.")),
+      );
+      return;
+    }
 
     if (password != konfirmasi) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -38,31 +46,56 @@ class _SignupScreenState extends State<SignupScreen> {
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
+        data: {'nama_lengkap': nama}, // metadata opsional
       );
 
       final user = response.user;
       if (user != null) {
-        // Simpan nama ke tabel 'users' sesuai ID
-        await Supabase.instance.client.from('users').insert({
+        final supabase = Supabase.instance.client;
+
+        // Simpan ke user_data (opsional)
+        await supabase.from('user_data').insert({
           'id': user.id,
-          'nama': nama,
-          'email': email,
+          'username': email,
+          'nama_lengkap': nama,
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Berhasil mendaftar! Silakan login.")),
-        );
+        // Simpan ke tabel users (penting untuk top up!)
+        await supabase.from('users').insert({
+          'id': user.id,
+          'email': email,
+          'username': email,
+          'nama_lengkap': nama,
+          'saldo': 0,
+          'created_at': DateTime.now().toIso8601String(),
+        });
 
-        Navigator.pushReplacementNamed(context, '/login');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Berhasil mendaftar! Silakan login.")),
+          );
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal daftar: ${e.message}")),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal daftar: $e")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Terjadi kesalahan: $e")),
+        );
+      }
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -82,10 +115,9 @@ class _SignupScreenState extends State<SignupScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+              padding: const EdgeInsets.only(top: 60, bottom: 20, left: 24, right: 24),
               decoration: const BoxDecoration(
                 color: Color(0xFFD81B60),
                 borderRadius: BorderRadius.only(
@@ -97,16 +129,16 @@ class _SignupScreenState extends State<SignupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Masukkan email Anda',
+                    'Buat Akun Baru',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 24,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Masukkan email yang terkait dengan akun Anda dan kami akan mengirimkan email berisi kode untuk mengatur ulang kata sandi Anda',
+                    'Isi data di bawah ini untuk memulai.',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -115,24 +147,33 @@ class _SignupScreenState extends State<SignupScreen> {
                 ],
               ),
             ),
-
-            // Form
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  _buildInput("Nama Pengguna", "Nama",
-                      controller: _namaController),
-                  _buildInput("Password baru", "Buat password baru",
-                      controller: _passwordController, obscure: true),
-                  _buildInput("Konfirmasi password", "Konfirmasi password",
-                      controller: _konfirmasiController, obscure: true),
-                  _buildInput("Email", "Masukkan Email",
-                      controller: _emailController),
-
+                  _buildInput("Nama Lengkap", "Masukkan nama lengkap",
+                      controller: _namaController, icon: Icons.person),
+                  _buildInput("Email", "Masukkan email valid",
+                      controller: _emailController,
+                      icon: Icons.email,
+                      type: TextInputType.emailAddress),
+                  _buildInput("Password", "Buat password",
+                      controller: _passwordController,
+                      obscure: _obscurePassword,
+                      icon: Icons.lock,
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                      )),
+                  _buildInput("Konfirmasi Password", "Ulangi password",
+                      controller: _konfirmasiController,
+                      obscure: _obscureKonfirmasi,
+                      icon: Icons.lock_outline,
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(() => _obscureKonfirmasi = !_obscureKonfirmasi),
+                        icon: Icon(_obscureKonfirmasi ? Icons.visibility_off : Icons.visibility),
+                      )),
                   const SizedBox(height: 30),
-
-                  // Tombol Sign Up
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -146,22 +187,29 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       child: _loading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Sign Up",
-                              style: TextStyle(color: Colors.white),
-                            ),
+                          : const Text("Sign Up",
+                              style: TextStyle(color: Colors.white, fontSize: 16)),
                     ),
                   ),
-
-                  const SizedBox(height: 30),
-                  Container(
-                    width: 60,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  )
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Sudah punya akun? "),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFD81B60),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             )
@@ -172,19 +220,31 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildInput(String label, String hint,
-      {bool obscure = false, TextEditingController? controller}) {
+      {bool obscure = false,
+      TextEditingController? controller,
+      IconData? icon,
+      Widget? suffixIcon,
+      TextInputType? type}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(
         controller: controller,
         obscureText: obscure,
+        keyboardType: type,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
+          prefixIcon: icon != null ? Icon(icon) : null,
+          suffixIcon: suffixIcon,
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFFD81B60)),
           ),
         ),
       ),
