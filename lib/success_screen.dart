@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dashboard_screen.dart';
+import 'package:intl/intl.dart'; 
 
 class SuccessScreen extends StatefulWidget {
+  // Menerima data jumlah transaksi dari halaman sebelumnya
   final String amount;
 
-  const SuccessScreen.SuccessScreen({super.key, required this.amount});
+  const SuccessScreen({super.key, required this.amount});
 
   @override
   State<SuccessScreen> createState() => _SuccessScreenState();
@@ -12,136 +13,191 @@ class SuccessScreen extends StatefulWidget {
 
 class _SuccessScreenState extends State<SuccessScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Pastikan locale 'id_ID' sudah terdaftar jika belum,
+    // biasanya dilakukan di main.dart
+    // initializeDateFormatting('id_ID', null);
+  }
+
+  // Fungsi untuk memformat angka menjadi format mata uang Rupiah
+  String _formatCurrency(String amount) {
+    try {
+      final number = double.parse(amount);
+      // Format mata uang untuk Indonesia (Rupiah)
+      final format =
+          NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+      return format.format(number);
+    } catch (e) {
+      // Fallback jika parsing gagal
+      return "Rp $amount";
+    }
+  }
+
+  // Fungsi untuk kembali ke Dashboard dan menghapus semua halaman sebelumnya dari stack
+  void _goToDashboard() {
+    Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+  }
+
+  // Fungsi untuk menampilkan opsi tambahan (misal: bagikan, unduh)
+  void _showMoreOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.share, color: Color(0xFFE91E63)),
+              title: const Text('Bagikan Bukti Transaksi'),
+              onTap: () {
+                Navigator.pop(context); // Tutup bottom sheet
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fungsi "Bagikan" belum diimplementasikan.')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.download, color: Color(0xFFE91E63)),
+              title: const Text('Unduh Bukti Transaksi'),
+              onTap: () {
+                Navigator.pop(context); // Tutup bottom sheet
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fungsi "Unduh" belum diimplementasikan.')),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFE91E63),
       body: Column(
         children: [
-          const SizedBox(height: 60),
-          // Tombol Panah Kembali
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                    (route) => false,
-                  );
-                },
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                onPressed: () {},
-              ),
-            ],
+          // AppBar kustom
+          Padding(
+            padding: const EdgeInsets.only(top: 40.0, left: 8.0, right: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: _goToDashboard, // Tombol kembali ke dashboard
+                ),
+                const Text(
+                  "Detail Transaksi",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onPressed: _showMoreOptions, // Menampilkan opsi tambahan
+                ),
+              ],
+            ),
           ),
-
           const SizedBox(height: 20),
 
-          // Checkmark hijau
-          const CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.check_circle, color: Colors.green, size: 40),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Box Putih
+          // Konten utama
           Expanded(
             child: Container(
               width: double.infinity,
-              margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 60),
+                  const SizedBox(height: 16),
                   const Text(
-                    "Bagus",
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    "Transaksi Berhasil",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    "Transaksimu berhasil",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Berapa banyak yang ingin Anda isi ulang?",
-                    style: TextStyle(color: Colors.grey),
-                    textAlign: TextAlign.center,
+                  Text(
+                    // Menampilkan tanggal dan waktu saat ini dengan format Indonesia
+                    DateFormat('d MMMM yyyy • HH:mm', 'id_ID').format(DateTime.now()) + ' WIB',
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 30),
                   const Text(
                     "Total Isi Ulang",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
-                    "Rp ${widget.amount}",
+                    _formatCurrency(widget.amount), // Menampilkan jumlah yang diformat
                     style: const TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFE91E63),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Info Pengguna
+                  const Spacer(), // Mendorong konten ke atas dan bawah
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
+                      color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.account_circle, size: 36, color: Colors.grey),
+                        const Icon(Icons.account_balance_wallet,
+                            size: 40, color: Color(0xFFE91E63)),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text("Erkei Sulistiawan", style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text("2345 6794 XXXX  • 15.02 WIB", style: TextStyle(fontSize: 12)),
+                            Text("My Dompet App",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text("Isi Ulang Saldo",
+                                style: TextStyle(fontSize: 12, color: Colors.grey)),
                           ],
                         ),
                       ],
                     ),
-                  )
+                  ),
+                  const Spacer(),
                 ],
               ),
             ),
           ),
 
-          // Tombol Kembali ke Beranda
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20),
+          // Tombol Aksi Bawah
+          Container(
+            color: Colors.white, // Memberi background putih pada area tombol
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: SizedBox(
-              width: 320,
+              width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                    (route) => false,
-                  );
-                },
+                onPressed: _goToDashboard,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB3E5FC),
+                  backgroundColor: const Color(0xFFE91E63),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 2,
                 ),
-                child: const Text("Kembali ke beranda", style: TextStyle(color: Colors.black)),
+                child: const Text("Kembali ke Beranda",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           ),

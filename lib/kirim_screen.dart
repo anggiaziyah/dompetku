@@ -1,66 +1,103 @@
+import 'package:dompetku/success_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(DompetDigitalApp());
-}
-
-class DompetDigitalApp extends StatefulWidget {
+class KirimScreen extends StatefulWidget {
   @override
-  State<DompetDigitalApp> createState() => _DompetDigitalAppState();
+  _KirimScreenState createState() => _KirimScreenState();
 }
 
-class _DompetDigitalAppState extends State<DompetDigitalApp> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: TransferPage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class TransferPage extends StatefulWidget {
-  @override
-  _TransferPageState createState() => _TransferPageState();
-}
-
-class _TransferPageState extends State<TransferPage> {
+class _KirimScreenState extends State<KirimScreen> {
   String selectedBank = 'GoPay';
+  String jumlahKirim = '';
 
   final List<String> banks = ['GoPay', 'ShopeePay', 'DANA'];
+
+  void _handleKeypadTap(String value) {
+    setState(() {
+      if (value == '⌫') {
+        if (jumlahKirim.isNotEmpty) {
+          jumlahKirim = jumlahKirim.substring(0, jumlahKirim.length - 1);
+        }
+      } else if (value != '.') {
+        jumlahKirim += value;
+      }
+    });
+  }
+
+  Future<void> _kirimUang() async {
+    if (jumlahKirim.isEmpty || jumlahKirim == '0') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Masukkan jumlah uang yang valid')),
+      );
+      return;
+    }
+
+    final supabase = Supabase.instance.client;
+    final jumlahInt = int.tryParse(jumlahKirim) ?? 0;
+
+    try {
+      await supabase.from('riwayat').insert({
+        'jenis': 'Kirim',
+        'tujuan': 'Angilin', // ganti sesuai kebutuhan
+        'jumlah': jumlahInt,
+        'waktu': DateTime.now().toIso8601String(),
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SuccessScreen(amount: jumlahKirim),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan ke riwayat: $e')),
+      );
+    }
+  }
+
+  String _formatCurrency(String angka) {
+    final raw = angka.replaceAll(RegExp(r'\D'), '');
+    if (raw.isEmpty) return '0';
+    final num = int.parse(raw);
+    return num.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFFF1F3),
+      backgroundColor: const Color(0xFFFFF1F3),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Bagian penerima
               Column(
                 children: [
-                  Icon(Icons.person, size: 40),
-                  Text("Anilin",
+                  const Icon(Icons.person, size: 40),
+                  const Text("Angilin",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text("5338-9049-8708-6105",
+                  const Text("5338-9049-8708-6105",
                       style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                 ],
               ),
-
-              // Jumlah
-              Text("ATM", style: TextStyle(fontSize: 16)),
-              Text("Rp 5.000.000",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-
-              SizedBox(height: 20),
-
-              // Dropdown Bank
+              Text(
+                jumlahKirim.isEmpty
+                    ? "Rp 0"
+                    : "Rp ${_formatCurrency(jumlahKirim)}",
+                style:
+                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -84,14 +121,11 @@ class _TransferPageState extends State<TransferPage> {
                   ),
                 ),
               ),
-
-              SizedBox(height: 20),
-
-              // Keypad
+              const SizedBox(height: 20),
               Expanded(
                 child: GridView.builder(
                   itemCount: 12,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     childAspectRatio: 2,
                   ),
@@ -102,26 +136,26 @@ class _TransferPageState extends State<TransferPage> {
                     if (index == 10) text = '0';
                     if (index == 11) text = '⌫';
                     return InkWell(
-                      onTap: () {},
+                      onTap: () => _handleKeypadTap(text),
                       child: Center(
-                          child: Text(text, style: TextStyle(fontSize: 24))),
+                        child: Text(
+                          text,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
                     );
                   },
                 ),
               ),
-
-              // Tombol Kirim
               ElevatedButton(
-                onPressed: () {
-                  // aksi kirim
-                },
+                onPressed: _kirimUang,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade200,
-                  minimumSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text("Kirim", style: TextStyle(fontSize: 18)),
+                child: const Text("Kirim", style: TextStyle(fontSize: 18)),
               ),
             ],
           ),
