@@ -4,6 +4,7 @@ import 'package:dompetku/pesan_screen.dart';
 import 'package:dompetku/topup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -14,6 +15,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
+  int _saldo = 0;
 
   Future<void> _signOut() async {
     await Supabase.instance.client.auth.signOut();
@@ -69,6 +71,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<void> _getSaldo() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final response = await Supabase.instance.client
+          .from('users')
+          .select('saldo')
+          .eq('id', user.id)
+          .single();
+      setState(() {
+        _saldo = (response['saldo'] as num?)?.toInt() ?? 0;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getSaldo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _getSaldo();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,9 +114,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Rp 325.550.000',
-                  style: TextStyle(
+                Text(
+                  NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+                      .format(_saldo),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -106,17 +135,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    actionButton(Icons.send, 'Kirim', () {
-                      Navigator.push(
+                    actionButton(Icons.send, 'Kirim', () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => KirimScreen()),
                       );
+                      _getSaldo();
                     }),
-                    actionButton(Icons.account_balance_wallet, 'Top Up', () {
-                      Navigator.push(
+                    actionButton(Icons.account_balance_wallet, 'Top Up', () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => TopUpScreen()),
                       );
+                      _getSaldo();
                     }),
                     actionButton(Icons.message, 'Pesan', () {
                       Navigator.push(
@@ -144,13 +175,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 16),
-                transactionTile('Menerima', 'Fiver', 'Rp 200.000'),
-                transactionTile('Kirim', 'Shoope', 'Rp 35.000'),
                 transactionTile('Menerima', 'Fiver1', '\$100.00 | 13.00 WIB'),
-                const SizedBox(height: 16),
-                historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
-                historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
-              ],
+historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
+historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
+              ]
             ),
           ),
         ],

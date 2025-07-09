@@ -10,7 +10,6 @@ class KirimScreen extends StatefulWidget {
 class _KirimScreenState extends State<KirimScreen> {
   String selectedBank = 'GoPay';
   String jumlahKirim = '';
-
   final List<String> banks = ['GoPay', 'ShopeePay', 'DANA'];
 
   void _handleKeypadTap(String value) {
@@ -35,14 +34,31 @@ class _KirimScreenState extends State<KirimScreen> {
 
     final supabase = Supabase.instance.client;
     final jumlahInt = int.tryParse(jumlahKirim) ?? 0;
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User belum login')),
+      );
+      return;
+    }
+
+    final userId = user.id;
+    const angilinId = '51b91472-d565-4a4c-a1ad-a842b7314560';
+    final catatan = 'Transfer ke Angilin via $selectedBank';
 
     try {
-      await supabase.from('riwayat').insert({
-        'jenis': 'Kirim',
-        'tujuan': 'Angilin', // ganti sesuai kebutuhan
-        'jumlah': jumlahInt,
-        'waktu': DateTime.now().toIso8601String(),
-      });
+      final res = await supabase.rpc('transfer_uang', params: {
+  'pengirim': userId,
+  'penerima': angilinId,
+  'jumlah': jumlahInt,
+  'catatan': catatan,
+}).execute();
+
+if (res.error != null) {
+  throw Exception(res.error!.message);
+}
+
 
       Navigator.push(
         context,
@@ -52,7 +68,7 @@ class _KirimScreenState extends State<KirimScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan ke riwayat: $e')),
+        SnackBar(content: Text('Gagal kirim uang: $e')),
       );
     }
   }
@@ -76,28 +92,17 @@ class _KirimScreenState extends State<KirimScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Column(
-                children: [
-                  const Icon(Icons.person, size: 40),
-                  const Text("Angilin",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const Text("5338-9049-8708-6105",
-                      style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 20),
-                ],
-              ),
+              const Icon(Icons.person, size: 40),
+              const Text("Angilin", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text("5338-9049-8708-6105", style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 20),
               Text(
-                jumlahKirim.isEmpty
-                    ? "Rp 0"
-                    : "Rp ${_formatCurrency(jumlahKirim)}",
-                style:
-                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                jumlahKirim.isEmpty ? "Rp 0" : "Rp ${_formatCurrency(jumlahKirim)}",
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -138,10 +143,7 @@ class _KirimScreenState extends State<KirimScreen> {
                     return InkWell(
                       onTap: () => _handleKeypadTap(text),
                       child: Center(
-                        child: Text(
-                          text,
-                          style: const TextStyle(fontSize: 24),
-                        ),
+                        child: Text(text, style: const TextStyle(fontSize: 24)),
                       ),
                     );
                   },
@@ -152,8 +154,7 @@ class _KirimScreenState extends State<KirimScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade200,
                   minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: const Text("Kirim", style: TextStyle(fontSize: 18)),
               ),
@@ -163,4 +164,8 @@ class _KirimScreenState extends State<KirimScreen> {
       ),
     );
   }
+}
+
+extension on PostgrestResponse {
+  get error => null;
 }

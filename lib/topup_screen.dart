@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'success_screen.dart';
 
 class TopUpScreen extends StatefulWidget {
   @override
@@ -48,31 +49,33 @@ class _TopUpScreenState extends State<TopUpScreen> {
       'status': 'sukses',
     });
 
-    // 2. Ambil saldo lama dari user_data
-    final result = await supabase
-        .from('user_data')
-        .select('saldo')
-        .eq('id', userId)
-        .single();
+    // 2. Tambah saldo lewat fungsi RPC Supabase
+    await supabase.rpc('tambah_saldo', params: {
+      'user_id_input': userId,
+      'jumlah_input': jumlahTopup,
+    });
 
-    final saldoLama = (result['saldo'] as num?) ?? 0;
-    final saldoBaru = saldoLama + jumlahTopup;
-
-    // 3. Update saldo user_data
-    await supabase
-        .from('user_data')
-        .update({'saldo': saldoBaru})
-        .eq('id', userId);
-
-    // 4. Catat ke tabel transaksi
-    await supabase.from('transaksi').insert({
+    // 3. Catat ke tabel riwayat
+    await supabase.from('riwayat').insert({
       'id_user': userId,
-      'tipe_transaksi': 'topup',
+      'jenis': 'top up',
       'nominal': jumlahTopup,
       'keterangan': 'Top up via $metode',
     });
 
-    print("✅ Top up sukses. Saldo sekarang: $saldoBaru");
+    // 4. Catat ke tabel pesan (opsional)
+    await supabase.from('pesan').insert({
+      'id_user': userId,
+      'isi': 'Top up berhasil sebesar Rp $jumlahTopup melalui $metode',
+    });
+
+    // 5. Navigasi ke halaman sukses
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SuccessScreen(amount: jumlahTopup.toString()),
+      ),
+    );
   }
 
   @override
@@ -166,9 +169,6 @@ class _TopUpScreenState extends State<TopUpScreen> {
                         await topUpSaldo(
                           jumlahTopup: amount,
                           metode: selectedMethod!,
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Top up berhasil!")),
                         );
                         _amountController.clear();
                         setState(() {
