@@ -1,238 +1,124 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class SettingScreen extends StatefulWidget {
+  const SettingScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool isDarkMode = false;
-  String? _userEmail; // State untuk menyimpan email pengguna
+class _SettingScreenState extends State<SettingScreen> {
+  String username = '';
+  String email = '';
+  bool darkMode = false;
 
   @override
   void initState() {
     super.initState();
-    // Ambil email pengguna saat halaman dimuat
-    _loadUserData();
+    loadUserData();
   }
 
-  // Fungsi untuk mengambil data pengguna dari Supabase
-  void _loadUserData() {
-    final user = Supabase.instance.client.auth.currentUser;
+  Future<void> loadUserData() async {
+    final supabase = Supabase.instance.client;
+    final user = supabase.auth.currentUser;
+
     if (user != null) {
+      final data = await supabase
+          .from('users')
+          .select('username, email')
+          .eq('id', user.id)
+          .single();
+
       setState(() {
-        _userEmail = user.email;
+        username = data['username'] ?? '-';
+        email = data['email'] ?? '-';
       });
     }
   }
 
-  // Fungsi untuk logout dengan aman
-  Future<void> _signOut() async {
-    try {
-      await Supabase.instance.client.auth.signOut();
-    } catch (e) {
-      // Tangani error jika ada, misal: tidak ada koneksi internet
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal logout: ${e.toString()}")),
-      );
-    }
-
+  void _logout() async {
+    await Supabase.instance.client.auth.signOut();
     if (mounted) {
-      // Kembali ke halaman login dan hapus semua rute sebelumnya
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      Navigator.pushReplacementNamed(context, '/login');
     }
-  }
-
-  // Fungsi untuk menampilkan snackbar placeholder
-  void _showFeatureNotAvailable() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fitur ini belum tersedia.')),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEEEEE),
-      body: SafeArea(
-        child: Column(
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: const Text('Pengaturan Profile', style: TextStyle(fontSize: 18)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black,
+        centerTitle: true,
+        leading: const BackButton(),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
           children: [
-            // AppBar Custom
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      // Gunakan pop untuk kembali ke halaman sebelumnya (Dashboard)
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  const Spacer(),
-                  const Text(
-                    "Pengaturan Profile",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 48), // Placeholder untuk menyeimbangkan judul
-                ],
-              ),
+            const Text("Umum", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            _buildTile("Mata uang Bawaan", "Rupiah"),
+            _buildTile("Negara", "Indonesia"),
+            _buildTile("Bahasa", "Indonesia"),
+            const SizedBox(height: 20),
+
+            const Text("Pengaturan Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            _buildTile("Username", username),
+            _buildTile("Alamat Email", email),
+
+            SwitchListTile(
+              value: darkMode,
+              onChanged: (val) {
+                setState(() {
+                  darkMode = val;
+                });
+              },
+              title: const Text("Mode Gelap"),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
             ),
 
-            // Grup Pengaturan "Umum"
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  _SettingItem(
-                    title: "Mata uang Bawaan",
-                    value: "Rupiah (IDR)",
-                    onTap: _showFeatureNotAvailable,
-                  ),
-                  const Divider(height: 1, indent: 16, endIndent: 16),
-                  _SettingItem(
-                    title: "Negara",
-                    value: "Indonesia",
-                    onTap: _showFeatureNotAvailable,
-                  ),
-                   const Divider(height: 1, indent: 16, endIndent: 16),
-                  _SettingItem(
-                    title: "Bahasa",
-                    value: "Indonesia",
-                    onTap: _showFeatureNotAvailable,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+            _buildTile("App Versi", "v1.0.0"),
 
-            // Grup Pengaturan "Profile"
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  _SettingItem(
-                    title: "Ubah Password",
-                    onTap: _showFeatureNotAvailable,
-                  ),
-                   const Divider(height: 1, indent: 16, endIndent: 16),
-                  // Menampilkan email pengguna yang sudah login
-                  _SettingItem(
-                    title: "Alamat Email",
-                    value: _userEmail ?? "Memuat...",
-                    onTap: _showFeatureNotAvailable,
-                  ),
-                   const Divider(height: 1, indent: 16, endIndent: 16),
-                  // Item Mode Gelap dengan Switch
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Mode Gelap"),
-                        Switch(
-                          value: isDarkMode,
-                          onChanged: (val) {
-                            setState(() {
-                              isDarkMode = val;
-                            });
-                            // Logika untuk mengubah tema aplikasi bisa ditambahkan di sini
-                             _showFeatureNotAvailable();
-                          },
-                          activeColor: Colors.pink.shade600,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Info Versi Aplikasi
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("App Versi"),
-                  Text("v1.0.0"),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-
-            // Tombol Logout
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _signOut, // Panggil fungsi signOut
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey[200],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text("Log Out", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: _logout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueGrey,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ),
+              child: const Text("Log Out", style: TextStyle(color: Colors.white)),
+            )
           ],
         ),
       ),
     );
   }
-}
 
-// Widget kustom untuk setiap baris pengaturan agar bisa diklik
-class _SettingItem extends StatelessWidget {
-  final String title;
-  final String? value;
-  final VoidCallback? onTap;
-
-  const _SettingItem({required this.title, this.value, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 15)),
-            Row(
-              children: [
-                if (value != null)
-                  Text(value!, style: const TextStyle(color: Colors.grey, fontSize: 15)),
-                const SizedBox(width: 4),
-                const Icon(Icons.chevron_right, color: Colors.grey, size: 22),
-              ],
-            )
-          ],
-        ),
+  Widget _buildTile(String title, String value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }

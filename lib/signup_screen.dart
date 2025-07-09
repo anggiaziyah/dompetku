@@ -49,26 +49,15 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       final user = response.user;
-
       if (user != null) {
-        final userId = user.id;
+        final supabase = Supabase.instance.client;
 
-        // Masukkan data ke tabel users
-        await Supabase.instance.client.from('users').insert({
-          'id': userId,
+        // ✅ Simpan user ke tabel 'users'
+        await supabase.from('users').insert({
+          'id': user.id,
           'email': email,
           'username': email,
           'nama_lengkap': nama,
-          'saldo': 0,
-          'created_at': DateTime.now().toIso8601String(),
-        });
-
-        // Masukkan data ke user_data juga (opsional)
-        await Supabase.instance.client.from('user_data').insert({
-          'id': userId,
-          'username': email,
-          'nama_lengkap': nama,
-          'no_hp': '',
           'saldo': 0,
           'created_at': DateTime.now().toIso8601String(),
         });
