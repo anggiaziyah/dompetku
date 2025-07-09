@@ -46,21 +46,13 @@ class _SignupScreenState extends State<SignupScreen> {
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
-        data: {'nama_lengkap': nama}, // metadata opsional
       );
 
       final user = response.user;
       if (user != null) {
         final supabase = Supabase.instance.client;
 
-        // Simpan ke user_data (opsional)
-        await supabase.from('user_data').insert({
-          'id': user.id,
-          'username': email,
-          'nama_lengkap': nama,
-        });
-
-        // Simpan ke tabel users (penting untuk top up!)
+        // ✅ Simpan user ke tabel 'users'
         await supabase.from('users').insert({
           'id': user.id,
           'email': email,
@@ -69,7 +61,6 @@ class _SignupScreenState extends State<SignupScreen> {
           'saldo': 0,
           'created_at': DateTime.now().toIso8601String(),
         });
-
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

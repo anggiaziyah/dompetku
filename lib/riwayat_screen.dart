@@ -1,3 +1,4 @@
+// riwayat_screen.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -88,8 +89,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor:
@@ -99,10 +99,10 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                             color: getIconColor(item['jenis']),
                           ),
                         ),
-                        title: Text("${item['jenis']} ke ${item['tujuan']}"),
+                        title: Text("${item['jenis']} - ${item['keterangan']}"),
                         subtitle: Text(formatTanggal(item['waktu'])),
                         trailing: Text(
-                          "Rp ${item['jumlah']}",
+                          "Rp ${item['nominal']}",
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),

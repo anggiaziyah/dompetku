@@ -30,9 +30,9 @@ void main() async {
 
   // Inisialisasi Supabase
   await Supabase.initialize(
-    url: 'https://dhglvbfvjepnjswotubq.supabase.co',
+    url: 'https://kbziuovdgpzvsmkztwvs.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoZ2x2YmZ2amVwbmpzd290dWJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MDE5NzUsImV4cCI6MjA2NzI3Nzk3NX0.t6lyL3yWbHcePj7_9tE3vXgSIpWzX7g-o8ZZnrxndeE',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtieml1b3ZkZ3B6dnNta3p0d3ZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNDc5MzgsImV4cCI6MjA2NzYyMzkzOH0.q8l-wPzjpiy-obmZrnTVQD7WTLKxGCecFS64Nbx14Bw',
   );
 
   // Inisialisasi format tanggal untuk bahasa Indonesia
@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
         '/success': (context) => SuccessScreen(amount: '',),
         '/riwayat': (context) => RiwayatScreen(),
         'topup': (context) => TopUpScreen(),
-      },
+     },
     );
   }
 }
