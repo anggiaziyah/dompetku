@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; 
 
 class SuccessScreen extends StatefulWidget {
-  // Menerima data jumlah transaksi dari halaman sebelumnya
   final String amount;
 
   const SuccessScreen({super.key, required this.amount});
@@ -15,31 +14,22 @@ class _SuccessScreenState extends State<SuccessScreen> {
   @override
   void initState() {
     super.initState();
-    // Pastikan locale 'id_ID' sudah terdaftar jika belum,
-    // biasanya dilakukan di main.dart
-    // initializeDateFormatting('id_ID', null);
   }
 
-  // Fungsi untuk memformat angka menjadi format mata uang Rupiah
   String _formatCurrency(String amount) {
     try {
       final number = double.parse(amount);
-      // Format mata uang untuk Indonesia (Rupiah)
-      final format =
-          NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+      final format = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
       return format.format(number);
     } catch (e) {
-      // Fallback jika parsing gagal
       return "Rp $amount";
     }
   }
 
-  // Fungsi untuk kembali ke Dashboard dan menghapus semua halaman sebelumnya dari stack
   void _goToDashboard() {
     Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
   }
 
-  // Fungsi untuk menampilkan opsi tambahan (misal: bagikan, unduh)
   void _showMoreOptions() {
     showModalBottomSheet(
       context: context,
@@ -54,7 +44,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
               leading: const Icon(Icons.share, color: Color(0xFFE91E63)),
               title: const Text('Bagikan Bukti Transaksi'),
               onTap: () {
-                Navigator.pop(context); // Tutup bottom sheet
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Fungsi "Bagikan" belum diimplementasikan.')),
                 );
@@ -64,7 +54,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
               leading: const Icon(Icons.download, color: Color(0xFFE91E63)),
               title: const Text('Unduh Bukti Transaksi'),
               onTap: () {
-                Navigator.pop(context); // Tutup bottom sheet
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Fungsi "Unduh" belum diimplementasikan.')),
                 );
@@ -82,7 +72,6 @@ class _SuccessScreenState extends State<SuccessScreen> {
       backgroundColor: const Color(0xFFE91E63),
       body: Column(
         children: [
-          // AppBar kustom
           Padding(
             padding: const EdgeInsets.only(top: 40.0, left: 8.0, right: 8.0),
             child: Row(
@@ -90,7 +79,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: _goToDashboard, // Tombol kembali ke dashboard
+                  onPressed: _goToDashboard,
                 ),
                 const Text(
                   "Detail Transaksi",
@@ -101,14 +90,12 @@ class _SuccessScreenState extends State<SuccessScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
-                  onPressed: _showMoreOptions, // Menampilkan opsi tambahan
+                  onPressed: _showMoreOptions,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
-
-          // Konten utama
           Expanded(
             child: Container(
               width: double.infinity,
@@ -131,25 +118,24 @@ class _SuccessScreenState extends State<SuccessScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    // Menampilkan tanggal dan waktu saat ini dengan format Indonesia
                     DateFormat('d MMMM yyyy • HH:mm', 'id_ID').format(DateTime.now()) + ' WIB',
                     style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 30),
                   const Text(
-                    "Total Isi Ulang",
+                    "Total Transaksi",
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _formatCurrency(widget.amount), // Menampilkan jumlah yang diformat
+                    _formatCurrency(widget.amount),
                     style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFE91E63),
                     ),
                   ),
-                  const Spacer(), // Mendorong konten ke atas dan bawah
+                  const Spacer(),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -166,7 +152,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                           children: const [
                             Text("My Dompet App",
                                 style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text("Isi Ulang Saldo",
+                            Text("Kirim Saldo",
                                 style: TextStyle(fontSize: 12, color: Colors.grey)),
                           ],
                         ),
@@ -178,10 +164,8 @@ class _SuccessScreenState extends State<SuccessScreen> {
               ),
             ),
           ),
-
-          // Tombol Aksi Bawah
           Container(
-            color: Colors.white, // Memberi background putih pada area tombol
+            color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: SizedBox(
               width: double.infinity,
