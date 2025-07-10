@@ -1,11 +1,13 @@
 import 'package:dompetku/Screen/home/dashboard_screen.dart';
 import 'package:dompetku/Screen/splash/splash_screen.dart';
 import 'package:dompetku/Screen/transaksi/kirim_screen.dart';
+
 import 'package:dompetku/pesan_screen.dart';
 import 'package:dompetku/riwayat_screen.dart';
 import 'package:dompetku/setting_screen.dart';
 import 'package:dompetku/success_screen.dart';
 import 'package:dompetku/topup_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -70,11 +72,11 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const SignupScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/pesan': (context) => const PesanScreen(),
-        '/settings': (context) => const SettingsScreen(),
+        '/settings': (context) => const SettingScreen(),
         '/kirim': (context) => KirimScreen(),
         '/success': (context) => SuccessScreen(amount: '',),
         '/riwayat': (context) => RiwayatScreen(),
-        'topup': (context) => TopUpScreen(),
+        'topup': (context) => TopupScreen(),
      },
     );
   }

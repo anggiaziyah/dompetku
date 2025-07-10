@@ -1,6 +1,7 @@
-import 'package:dompetku/Screen/transaksi/kirim_screen.dart';
+import 'package:dompetku/Screen/transaksi/kirim_screen.dart'; 
 import 'package:dompetku/lebih_screen.dart';
 import 'package:dompetku/pesan_screen.dart';
+import 'package:dompetku/setting_screen.dart';
 import 'package:dompetku/topup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,8 +53,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               title: const Text('Lihat Profil'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Navigasi ke halaman Profil')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingScreen()),
                 );
               },
             ),
@@ -145,7 +147,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     actionButton(Icons.account_balance_wallet, 'Top Up', () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TopUpScreen()),
+                        MaterialPageRoute(builder: (context) => TopupScreen()),
                       );
                       _getSaldo();
                     }),
@@ -176,9 +178,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 16),
                 transactionTile('Menerima', 'Fiver1', '\$100.00 | 13.00 WIB'),
-historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
-historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
-              ]
+                historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
+                historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
+              ],
             ),
           ),
         ],

@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class KirimScreen extends StatefulWidget {
+  const KirimScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _KirimScreenState createState() => _KirimScreenState();
 }
 
@@ -48,25 +51,30 @@ class _KirimScreenState extends State<KirimScreen> {
     final catatan = 'Transfer ke Angilin via $selectedBank';
 
     try {
-      final res = await supabase.rpc('transfer_uang', params: {
-  'pengirim': userId,
-  'penerima': angilinId,
-  'jumlah': jumlahInt,
-  'catatan': catatan,
-}).execute();
+      final response = await supabase
+          .rpc('transfer_uang', params: {
+            'pengirim': userId,
+            'penerima': angilinId,
+            'jumlah': jumlahInt,
+            'catatan': catatan,
+          })
+          // ignore: deprecated_member_use
+          .execute();
 
-if (res.error != null) {
-  throw Exception(res.error!.message);
-}
+      if (response.error != null) {
+        throw Exception(response.error!.message);
+      }
 
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SuccessScreen(amount: jumlahKirim),
-        ),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SuccessScreen(amount: jumlahKirim),
+          ),
+        );
+      }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal kirim uang: $e')),
       );
@@ -163,9 +171,8 @@ if (res.error != null) {
         ),
       ),
     );
-  }
-}
-
-extension on PostgrestResponse {
+  }}
+  
+  extension on PostgrestResponse {
   get error => null;
-}
+  }

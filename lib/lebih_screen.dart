@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class LebihScreen extends StatefulWidget {
@@ -12,7 +11,7 @@ class _LebihScreenState extends State<LebihScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Ada 2 tab: Pengaturan dan Keamanan
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.pink.shade600,
@@ -46,40 +45,64 @@ class _PengaturanTabState extends State<PengaturanTab> {
   bool _darkMode = false;
   String _bahasa = 'Indonesia';
 
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showTentangAplikasiDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Tentang Aplikasi'),
+        content: const Text(
+          'Aplikasi DompetKu\n\nVersi: 1.0.0\nDibuat untuk mempermudah transaksi digital pengguna.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
         SwitchListTile(
           title: const Text('Mode Gelap'),
+          secondary: const Icon(Icons.dark_mode),
           value: _darkMode,
           onChanged: (val) {
-            setState(() {
-              _darkMode = val;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Mode Gelap: ${val ? "Aktif" : "Nonaktif"}'),
-              ),
-            );
+            setState(() => _darkMode = val);
+            _showSnackbar('Mode Gelap: ${val ? "Aktif" : "Nonaktif"}');
           },
         ),
+        const Divider(),
         ListTile(
           leading: const Icon(Icons.language),
           title: const Text('Bahasa'),
           subtitle: Text(_bahasa),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           onTap: () {
             showModalBottomSheet(
               context: context,
               builder: (_) {
-                return ListView(
-                  shrinkWrap: true,
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    const SizedBox(height: 10),
+                    const Text('Pilih Bahasa',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ListTile(
                       title: const Text('Indonesia'),
                       onTap: () {
                         setState(() => _bahasa = 'Indonesia');
                         Navigator.pop(context);
+                        _showSnackbar('Bahasa diubah ke Indonesia');
                       },
                     ),
                     ListTile(
@@ -87,6 +110,7 @@ class _PengaturanTabState extends State<PengaturanTab> {
                       onTap: () {
                         setState(() => _bahasa = 'English');
                         Navigator.pop(context);
+                        _showSnackbar('Language changed to English');
                       },
                     ),
                   ],
@@ -95,41 +119,95 @@ class _PengaturanTabState extends State<PengaturanTab> {
             );
           },
         ),
+        const Divider(),
         ListTile(
           leading: const Icon(Icons.info_outline),
-          title: const Text('Versi Aplikasi'),
-          subtitle: const Text('1.0.0'),
+          title: const Text('Tentang Aplikasi'),
+          onTap: _showTentangAplikasiDialog,
         ),
       ],
     );
   }
 }
 
-class KeamananTab extends StatelessWidget {
+class KeamananTab extends StatefulWidget {
   const KeamananTab({super.key});
+
+  @override
+  State<KeamananTab> createState() => _KeamananTabState();
+}
+
+class _KeamananTabState extends State<KeamananTab> {
+  bool _verifikasi2Langkah = false;
+  bool _sidikJari = true;
+  final TextEditingController _passwordController = TextEditingController();
+
+  void _showSnackbar(String pesan) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(pesan)));
+  }
+
+  void _showGantiPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Ganti Password'),
+        content: TextField(
+          controller: _passwordController,
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'Password Baru'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              String passwordBaru = _passwordController.text.trim();
+              Navigator.pop(context);
+              _passwordController.clear();
+              if (passwordBaru.isNotEmpty) {
+                _showSnackbar('Password berhasil diubah!');
+              } else {
+                _showSnackbar('Password tidak boleh kosong.');
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
         ListTile(
-          leading: const Icon(Icons.lock),
+          leading: const Icon(Icons.lock_outline),
           title: const Text('Ganti Password'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Navigasi ke ganti password')),
-            );
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: _showGantiPasswordDialog,
+        ),
+        const Divider(),
+        SwitchListTile(
+          title: const Text('Verifikasi 2 Langkah'),
+          secondary: const Icon(Icons.verified_user),
+          value: _verifikasi2Langkah,
+          onChanged: (val) {
+            setState(() => _verifikasi2Langkah = val);
+            _showSnackbar('Verifikasi 2 Langkah ${val ? "Aktif" : "Nonaktif"}');
           },
         ),
-        ListTile(
-          leading: const Icon(Icons.verified_user),
-          title: const Text('Verifikasi 2 Langkah'),
-          trailing: Switch(value: false, onChanged: (_) {}),
-        ),
-        ListTile(
-          leading: const Icon(Icons.fingerprint),
+        SwitchListTile(
           title: const Text('Gunakan Sidik Jari'),
-          trailing: Switch(value: true, onChanged: (_) {}),
+          secondary: const Icon(Icons.fingerprint),
+          value: _sidikJari,
+          onChanged: (val) {
+            setState(() => _sidikJari = val);
+            _showSnackbar('Sidik Jari ${val ? "Diaktifkan" : "Dinonaktifkan"}');
+          },
         ),
       ],
     );

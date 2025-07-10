@@ -3,12 +3,12 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'success_screen.dart';
 
-class TopUpScreen extends StatefulWidget {
+class TopupScreen extends StatefulWidget {
   @override
-  _TopUpScreenState createState() => _TopUpScreenState();
+  _TopupScreenState createState() => _TopupScreenState();
 }
 
-class _TopUpScreenState extends State<TopUpScreen> {
+class _TopupScreenState extends State<TopupScreen> {
   final TextEditingController _amountController = TextEditingController();
   String? selectedMethod;
 
