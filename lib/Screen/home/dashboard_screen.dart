@@ -1,6 +1,6 @@
-import 'package:dompetku/ScanQR_screen.dart';
 import 'package:dompetku/Screen/transaksi/kirim_screen.dart';
 import 'package:dompetku/lebih_screen.dart';
+import 'package:dompetku/pesan_screen.dart';
 import 'package:dompetku/setting_screen.dart';
 import 'package:dompetku/topup_screen.dart';
 import 'package:flutter/material.dart';
@@ -159,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     actionButton(Icons.send, 'Kirim', () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => KirimScreen(penerimaId: '', username: '', namaLengkap: '',)),
+                        MaterialPageRoute(builder: (context) => KirimScreen(penerimaId: null, username: null, namaLengkap: null,)),
                       );
                       _getSaldo();
                       _getRiwayatTransaksi();
@@ -172,10 +172,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _getSaldo();
                       _getRiwayatTransaksi();
                     }),
-                    actionButton(Icons.qr_code_scanner, 'Scan', () {
+                    actionButton(Icons.message, 'Pesan', () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ScanQRScreen()),
+                        MaterialPageRoute(builder: (context) => PesanScreen()),
                       );
                     }),
                     actionButton(Icons.more_horiz, 'Lebih', () {

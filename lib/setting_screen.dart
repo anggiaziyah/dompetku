@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+// PERUBAHAN DI SINI: Tambahkan 'hide Provider'
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
-import 'main.dart';
+// Impor ThemeNotifier dari main.dart (sesuaikan path jika perlu)
+import 'main.dart'; 
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -26,6 +26,7 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   void initState() {
     super.initState();
+    // Memanggil _loadUserData setelah frame pertama selesai dibangun
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserData();
     });
@@ -53,7 +54,7 @@ class _SettingScreenState extends State<SettingScreen> {
           country = data['country'] ?? 'Indonesia';
           language = data['language'] ?? 'Indonesia';
           darkMode = data['dark_mode'] ?? false;
-
+          
           final themeNotifier = Provider.of<ThemeNotifier>(context, listen: false);
           themeNotifier.setThemeMode(darkMode ? ThemeMode.dark : ThemeMode.light);
 
@@ -67,8 +68,8 @@ class _SettingScreenState extends State<SettingScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat data profile: ${e.toString()}')),
-        );
+            SnackBar(content: Text('Gagal memuat data profile: ${e.toString()}')));
+
       }
     }
   }
@@ -110,116 +111,27 @@ class _SettingScreenState extends State<SettingScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await supabase.from('users').update({column: value}).eq('id', user.id);
+      await supabase
+          .from('users')
+          .update({column: value}).eq('id', user.id);
       await _loadUserData();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memperbarui $column: ${e.toString()}')),
-        );
+            SnackBar(content: Text('Gagal memperbarui $column: ${e.toString()}')));
       }
     } finally {
-      if (mounted) {
+      if(mounted) {
         setState(() => _isLoading = false);
       }
     }
   }
-
+  
   void _logout() async {
     await supabase.auth.signOut();
     if (mounted) {
       Navigator.pushReplacementNamed(context, '/login');
     }
-  }
-
- void _showMyQRDialog(String id, String username) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text("QR Code Saya"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('$username'),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            height: 200,
-            child: QrImageView(
-              data: jsonEncode({
-                'type': 'user',
-                'id': id,
-                'username': username,
-              }),
-              version: QrVersions.auto,
-              backgroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          child: const Text("Tutup"),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ],
-    ),
-  );
-}
-
-           
-
-  Widget _darkModeSwitch(ThemeNotifier themeNotifier) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: SwitchListTile(
-        value: themeNotifier.themeMode == ThemeMode.dark,
-        onChanged: (val) {
-          themeNotifier.setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
-          _updateProfileField('dark_mode', val);
-        },
-        title: const Text("Mode Gelap"),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-      ),
-    );
-  }
-
-  Widget _settingTile(String title, String value, VoidCallback? onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title),
-            Row(
-              children: [
-                Text(value, style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7),
-                )),
-                if (onTap != null) const SizedBox(width: 8),
-                if (onTap != null) const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -267,36 +179,11 @@ class _SettingScreenState extends State<SettingScreen> {
                 }),
                 _settingTile("Alamat Email", email, () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Perubahan email harus melalui proses verifikasi. Fitur ini sedang dalam pengembangan.')),
+                    const SnackBar(content: Text('Perubahan email harus melalui proses verifikasi. Fitur ini sedang dalam pengembangan.'))
                   );
                 }),
                 _darkModeSwitch(themeNotifier),
                 _settingTile("App Versi", "v1.0.0", null),
-
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    final user = supabase.auth.currentUser;
-                    if (user != null && username != '-') {
-                      _showMyQRDialog(user.id, username);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Gagal menampilkan QR: data tidak lengkap")),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.qr_code),
-                  label: const Text("Bagikan QR Saya"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple.shade300,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: _logout,
@@ -311,6 +198,59 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _darkModeSwitch(ThemeNotifier themeNotifier) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: SwitchListTile(
+        value: themeNotifier.themeMode == ThemeMode.dark,
+        onChanged: (val) {
+          themeNotifier.setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
+          _updateProfileField('dark_mode', val);
+        },
+        title: const Text("Mode Gelap"),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      ),
+    );
+  }
+
+  Widget _settingTile(String title, String value, VoidCallback? onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(title),
+            Row(
+              children: [
+                Text(value, style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7)
+                )),
+                if (onTap != null) const SizedBox(width: 8),
+                if (onTap != null) const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

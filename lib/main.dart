@@ -3,7 +3,6 @@ import 'package:dompetku/Screen/splash/splash_screen.dart';
 import 'package:dompetku/Screen/transaksi/kirim_screen.dart';
 import 'package:dompetku/pesan_screen.dart';
 import 'package:dompetku/riwayat_screen.dart';
-import 'package:dompetku/ScanQR_screen.dart';
 import 'package:dompetku/setting_screen.dart';
 import 'package:dompetku/success_screen.dart';
 import 'package:dompetku/topup_screen.dart';
@@ -113,7 +112,6 @@ class MyApp extends StatelessWidget {
             ),
         '/riwayat': (context) => RiwayatScreen(),
         'topup': (context) => TopupScreen(),
-        '/scanqr': (context) => ScanQRScreen(),
         
       },
     );
