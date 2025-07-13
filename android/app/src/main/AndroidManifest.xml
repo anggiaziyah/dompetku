@@ -1,8 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+
+    <application 
         android:label="dompetku"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <uses-feature android:name="android.hardware.camera" />
+
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

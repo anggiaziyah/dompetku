@@ -2,8 +2,9 @@ import 'package:dompetku/success_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+
 class KirimScreen extends StatefulWidget {
-  const KirimScreen({super.key});
+  const KirimScreen({super.key, required penerimaId, required username, required namaLengkap});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -13,7 +14,7 @@ class KirimScreen extends StatefulWidget {
 class _KirimScreenState extends State<KirimScreen> {
   String selectedBank = 'GoPay';
   String jumlahKirim = '';
-  final List<String> banks = ['GoPay', 'ShopeePay', 'DANA'];
+  final List<String> banks = ['GoPay', 'ShopeePay', 'OVO', 'DANA'];
 
   void _handleKeypadTap(String value) {
     setState(() {
@@ -28,58 +29,71 @@ class _KirimScreenState extends State<KirimScreen> {
   }
 
   Future<void> _kirimUang() async {
-    if (jumlahKirim.isEmpty || jumlahKirim == '0') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan jumlah uang yang valid')),
-      );
-      return;
-    }
-
-    final supabase = Supabase.instance.client;
-    final jumlahInt = int.tryParse(jumlahKirim) ?? 0;
-    final user = supabase.auth.currentUser;
-
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User belum login')),
-      );
-      return;
-    }
-
-    final userId = user.id;
-    const angilinId = '51b91472-d565-4a4c-a1ad-a842b7314560';
-    final catatan = 'Transfer ke Angilin via $selectedBank';
-
-    try {
-      final response = await supabase
-          .rpc('transfer_uang', params: {
-            'pengirim': userId,
-            'penerima': angilinId,
-            'jumlah': jumlahInt,
-            'catatan': catatan,
-          })
-          // ignore: deprecated_member_use
-          .execute();
-
-      if (response.error != null) {
-        throw Exception(response.error!.message);
-      }
-
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SuccessScreen(amount: jumlahKirim),
-          ),
-        );
-      }
-    } catch (e) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal kirim uang: $e')),
-      );
-    }
+  if (jumlahKirim.isEmpty || jumlahKirim == '0') {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Masukkan jumlah uang yang valid')),
+    );
+    return;
   }
+
+  final supabase = Supabase.instance.client;
+  final jumlahInt = int.tryParse(jumlahKirim) ?? 0;
+  final user = supabase.auth.currentUser;
+
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('User belum login')),
+    );
+    return;
+  }
+
+  final userId = user.id;
+  const angilinId = '611f0def-2e8c-408b-b28e-971572f90405';
+  final catatan = 'Transfer ke Angilin via $selectedBank';
+
+  try {
+    final response = await supabase
+        .rpc('transfer_uang', params: {
+          'pengirim': userId,
+          'penerima': angilinId,
+          'jumlah': jumlahInt,
+          'catatan': catatan,
+        })
+        .execute();
+
+    if (response.error != null) {
+      throw Exception(response.error!.message);
+    }
+
+    // ✅ Tambahkan pesan ke tabel pesan
+    await supabase.from('pesan').insert({
+      'id_user': userId,
+      'isi': 'Berhasil mengirim Rp $jumlahInt ke Angilin via $selectedBank.',
+    });
+
+    // ✅ Tambahkan riwayat ke tabel riwayat
+    await supabase.from('riwayat').insert({
+      'id_user': userId,
+      'jenis': 'Transfer',
+      'nominal': jumlahInt,
+      'keterangan': catatan,
+    });
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SuccessScreen(amount: jumlahKirim),
+        ),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Gagal kirim uang: $e')),
+    );
+  }
+}
+
 
   String _formatCurrency(String angka) {
     final raw = angka.replaceAll(RegExp(r'\D'), '');

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'success_screen.dart';
+import 'succestopup_screen.dart';
 
 class TopupScreen extends StatefulWidget {
   @override
@@ -73,7 +73,7 @@ class _TopupScreenState extends State<TopupScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SuccessScreen(amount: jumlahTopup.toString()),
+        builder: (context) => SuccessTopupScreen(amount: jumlahTopup.toString()),
       ),
     );
   }

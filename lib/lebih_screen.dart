@@ -8,26 +8,41 @@ class LebihScreen extends StatefulWidget {
 }
 
 class _LebihScreenState extends State<LebihScreen> {
+  bool _darkMode = false;
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.pink.shade600,
-          title: const Text('Menu Tambahan'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Pengaturan'),
-              Tab(text: 'Keamanan'),
+    // Update Theme ketika mode gelap diaktifkan
+    // ignore: unused_local_variable
+    final theme = Theme.of(context);
+
+    return Theme(
+      data: _darkMode ? ThemeData.dark() : ThemeData.light(),
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.pink.shade600,
+            foregroundColor: Colors.white,
+            title: const Text('Menu Tambahan'),
+            bottom: const TabBar(
+              tabs: [
+                Tab(text: 'Pengaturan'),
+                Tab(text: 'Keamanan'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              PengaturanTab(
+                isDarkMode: _darkMode,
+                onToggleDarkMode: (val) {
+                  setState(() => _darkMode = val);
+                },
+              ),
+              const KeamananTab(),
             ],
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            PengaturanTab(),
-            KeamananTab(),
-          ],
         ),
       ),
     );
@@ -35,14 +50,20 @@ class _LebihScreenState extends State<LebihScreen> {
 }
 
 class PengaturanTab extends StatefulWidget {
-  const PengaturanTab({super.key});
+  final bool isDarkMode;
+  final ValueChanged<bool> onToggleDarkMode;
+
+  const PengaturanTab({
+    super.key,
+    required this.isDarkMode,
+    required this.onToggleDarkMode,
+  });
 
   @override
   State<PengaturanTab> createState() => _PengaturanTabState();
 }
 
 class _PengaturanTabState extends State<PengaturanTab> {
-  bool _darkMode = false;
   String _bahasa = 'Indonesia';
 
   void _showSnackbar(String message) {
@@ -75,9 +96,9 @@ class _PengaturanTabState extends State<PengaturanTab> {
         SwitchListTile(
           title: const Text('Mode Gelap'),
           secondary: const Icon(Icons.dark_mode),
-          value: _darkMode,
+          value: widget.isDarkMode,
           onChanged: (val) {
-            setState(() => _darkMode = val);
+            widget.onToggleDarkMode(val);
             _showSnackbar('Mode Gelap: ${val ? "Aktif" : "Nonaktif"}');
           },
         ),

@@ -1,6 +1,6 @@
-import 'package:dompetku/Screen/transaksi/kirim_screen.dart'; 
+import 'package:dompetku/ScanQR_screen.dart';
+import 'package:dompetku/Screen/transaksi/kirim_screen.dart';
 import 'package:dompetku/lebih_screen.dart';
-import 'package:dompetku/pesan_screen.dart';
 import 'package:dompetku/setting_screen.dart';
 import 'package:dompetku/topup_screen.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +17,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   int _saldo = 0;
+  List<Map<String, dynamic>> _riwayatTransaksi = [];
 
   Future<void> _signOut() async {
     await Supabase.instance.client.auth.signOut();
@@ -87,16 +88,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _getRiwayatTransaksi() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final response = await Supabase.instance.client
+          .from('riwayat')
+          .select('jenis, nominal, keterangan, waktu')
+          .eq('id_user', user.id)
+          .order('waktu', ascending: false)
+          .limit(5);
+
+      setState(() {
+        _riwayatTransaksi = List<Map<String, dynamic>>.from(response);
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _getSaldo();
+    _getRiwayatTransaksi();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _getSaldo();
+    _getRiwayatTransaksi();
   }
 
   @override
@@ -140,9 +159,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     actionButton(Icons.send, 'Kirim', () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => KirimScreen()),
+                        MaterialPageRoute(builder: (context) => KirimScreen(penerimaId: '', username: '', namaLengkap: '',)),
                       );
                       _getSaldo();
+                      _getRiwayatTransaksi();
                     }),
                     actionButton(Icons.account_balance_wallet, 'Top Up', () async {
                       await Navigator.push(
@@ -150,11 +170,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         MaterialPageRoute(builder: (context) => TopupScreen()),
                       );
                       _getSaldo();
+                      _getRiwayatTransaksi();
                     }),
-                    actionButton(Icons.message, 'Pesan', () {
+                    actionButton(Icons.qr_code_scanner, 'Scan', () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PesanScreen()),
+                        MaterialPageRoute(builder: (context) => ScanQRScreen()),
                       );
                     }),
                     actionButton(Icons.more_horiz, 'Lebih', () {
@@ -177,9 +198,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 16),
-                transactionTile('Menerima', 'Fiver1', '\$100.00 | 13.00 WIB'),
-                historyItem('Devon Lane', '+\$1.200', '09:39 AM'),
-                historyItem('Esther Howard', '+\$1.200', '09:39 AM'),
+                if (_riwayatTransaksi.isEmpty)
+                  const Center(child: Text('Belum ada transaksi.'))
+                else
+                  ..._riwayatTransaksi.map((item) {
+                    final jenis = item['jenis'] ?? 'Transaksi';
+                    final nominal = item['nominal'] ?? 0;
+                    final keterangan = item['keterangan'] ?? '-';
+                    final waktu = DateFormat('dd MMM yyyy, HH:mm', 'id_ID')
+                        .format(DateTime.parse(item['waktu']));
+
+                    final formattedNominal = NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: 'Rp ',
+                      decimalDigits: 0,
+                    ).format(nominal);
+
+                    return transactionTile(jenis, keterangan, '$formattedNominal | $waktu');
+                  }).toList(),
               ],
             ),
           ),
@@ -238,8 +274,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: Icon(
-          type == 'Menerima' ? Icons.call_received : Icons.call_made,
-          color: type == 'Menerima' ? Colors.green : Colors.red,
+          type.toLowerCase().contains('top') || type.toLowerCase().contains('terima')
+              ? Icons.call_received
+              : Icons.call_made,
+          color: type.toLowerCase().contains('top') || type.toLowerCase().contains('terima')
+              ? Colors.green
+              : Colors.red,
         ),
         title: Text(type),
         subtitle: Text(name),
@@ -247,31 +287,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           amount,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-      ),
-    );
-  }
-
-  Widget historyItem(String name, String amount, String time) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.grey.shade300,
-      ),
-      title: Text(name),
-      subtitle: const Text('Transfer'),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            amount,
-            style: const TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(time, style: const TextStyle(fontSize: 12)),
-        ],
       ),
     );
   }

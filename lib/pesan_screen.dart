@@ -1,21 +1,6 @@
 import 'package:flutter/material.dart';
-
-// 1. Membuat Model untuk data pesan agar lebih terstruktur dan aman
-class Message {
-  final String title;
-  final String subtitle;
-  final String time;
-  final IconData icon;
-  bool isRead; // Menambahkan status 'telah dibaca'
-
-  Message({
-    required this.title,
-    required this.subtitle,
-    required this.time,
-    required this.icon,
-    this.isRead = false, // Defaultnya, pesan belum dibaca
-  });
-}
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/intl.dart';
 
 class PesanScreen extends StatefulWidget {
   const PesanScreen({super.key});
@@ -25,62 +10,31 @@ class PesanScreen extends StatefulWidget {
 }
 
 class _PesanScreenState extends State<PesanScreen> {
-  // 2. Menggunakan List dari Model Message
-  final List<Message> _messages = [
-    Message(
-      title: 'Promo Spesial!',
-      subtitle: 'Dapatkan cashback 30% untuk transaksi di atas Rp100.000',
-      time: 'Hari ini',
-      icon: Icons.local_offer,
-      isRead: false, // Belum dibaca
-    ),
-    Message(
-      title: 'Notifikasi Transaksi',
-      subtitle: 'Isi ulang Rp30.000 berhasil dilakukan',
-      time: 'Kemarin',
-      icon: Icons.receipt_long,
-      isRead: true, // Sudah dibaca
-    ),
-    Message(
-      title: 'Update Fitur Baru',
-      subtitle: 'Sekarang kamu bisa kirim uang ke rekening bank!',
-      time: '2 hari lalu',
-      icon: Icons.system_update,
-      isRead: false, // Belum dibaca
-    ),
-  ];
+  List<Message> _messages = [];
+  bool _loading = true;
 
-  // 3. Fungsi untuk menampilkan detail pesan saat diklik
-  void _showMessageDetail(Message message) {
-    // Menandai pesan sebagai telah dibaca
-    setState(() {
-      message.isRead = true;
-    });
-
-    // Menampilkan dialog dengan detail pesan
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(message.title),
-        content: Text(message.subtitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Tutup'),
-          ),
-        ],
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _fetchMessages();
   }
 
-  // 4. Fungsi untuk menghapus pesan
-  void _deleteMessage(int index) {
+  Future<void> _fetchMessages() async {
+    final supabase = Supabase.instance.client;
+    final user = supabase.auth.currentUser;
+
+    if (user == null) return;
+
+    final response = await supabase
+        .from('pesan')
+        .select()
+        .eq('id_user', user.id)
+        .order('waktu', ascending: false);
+
     setState(() {
-      _messages.removeAt(index);
+      _messages = response.map<Message>((data) => Message.fromMap(data)).toList();
+      _loading = false;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pesan telah dihapus.')),
-    );
   }
 
   @override
@@ -97,62 +51,64 @@ class _PesanScreenState extends State<PesanScreen> {
         ),
       ),
       backgroundColor: Colors.white,
-      // 5. Menampilkan pesan jika kotak masuk kosong
-      body: _messages.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.mark_email_unread_outlined, size: 80, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Tidak ada pesan baru',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                ],
-              ),
-            )
-          : ListView.separated(
-              itemCount: _messages.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16),
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return InkWell(
-                  onTap: () => _showMessageDetail(message),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: CircleAvatar(
-                      backgroundColor: message.isRead ? Colors.grey.shade300 : Colors.pink[100],
-                      child: Icon(message.icon, color: message.isRead ? Colors.grey.shade600 : Colors.pink.shade600),
-                    ),
-                    title: Text(
-                      message.title,
-                      style: TextStyle(
-                        // 6. Judul menjadi tebal jika belum dibaca
-                        fontWeight: message.isRead ? FontWeight.normal : FontWeight.bold,
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _messages.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.mark_email_unread_outlined, size: 80, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Tidak ada pesan baru',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
-                    ),
-                    subtitle: Text(message.subtitle),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          message.time,
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 4),
-                        // 7. Tombol hapus
-                        InkWell(
-                          onTap: () => _deleteMessage(index),
-                          child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                        )
-                      ],
-                    ),
+                    ],
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.separated(
+                  itemCount: _messages.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16),
+                  itemBuilder: (context, index) {
+                    final message = _messages[index];
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFF8BBD0),
+                        child: Icon(Icons.message, color: Color(0xFFE91E63)),
+                      ),
+                      title: const Text(
+                        'Pesan Transaksi',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        message.isi,
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                      trailing: Text(
+                        DateFormat('dd MMM HH:mm', 'id_ID').format(message.waktu),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      // onTap tidak digunakan lagi karena halaman detail dihapus
+                    );
+                  },
+                ),
+    );
+  }
+}
+
+// Buat class model Message jika belum ada
+class Message {
+  final String isi;
+  final DateTime waktu;
+
+  Message({required this.isi, required this.waktu});
+
+  factory Message.fromMap(Map<String, dynamic> map) {
+    return Message(
+      isi: map['isi'] ?? '',
+      waktu: DateTime.parse(map['waktu']),
     );
   }
 }

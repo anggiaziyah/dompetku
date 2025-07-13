@@ -1,25 +1,25 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:universal_html/html.dart' as html;
+import 'package:intl/intl.dart'; 
 
-class SuccessScreen extends StatefulWidget {
+class SuccessTopupScreen extends StatefulWidget {
   final String amount;
 
-  const SuccessScreen({super.key, required this.amount});
+  const SuccessTopupScreen({super.key, required this.amount});
 
   @override
-  State<SuccessScreen> createState() => _SuccessScreenState();
+  State<SuccessTopupScreen> createState() => _SuccessTopupScreenState();
 }
 
-class _SuccessScreenState extends State<SuccessScreen> {
+class _SuccessTopupScreenState extends State<SuccessTopupScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   String _formatCurrency(String amount) {
     try {
       final number = double.parse(amount);
-      final format =
-          NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+      final format = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
       return format.format(number);
     } catch (e) {
       return "Rp $amount";
@@ -28,81 +28,6 @@ class _SuccessScreenState extends State<SuccessScreen> {
 
   void _goToDashboard() {
     Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-  }
-
-  Future<void> _unduhBuktiTransaksi() async {
-    final pdf = pw.Document();
-    final now = DateTime.now();
-    final formattedDate = DateFormat('d MMMM yyyy - HH:mm', 'id_ID').format(now);
-    final idTransaksi =
-        "TRX${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour}${now.minute}";
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a6,
-        build: (context) => pw.Padding(
-          padding: const pw.EdgeInsets.all(16),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(
-                child: pw.Text('MY DOMPET APP',
-                    style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-              ),
-              pw.Center(child: pw.Text('BUKTI TRANSAKSI')),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-
-              // TABEL RAPI
-              pw.Table(
-                columnWidths: {
-                  0: pw.FlexColumnWidth(3),
-                  1: pw.FlexColumnWidth(5),
-                },
-                children: [
-                  _buildRow('Tanggal', '$formattedDate WIB'),
-                  _buildRow('ID Transaksi', idTransaksi),
-                  _buildRow('Tipe', 'Kirim Saldo'),
-                  _buildRow('Jumlah', _formatCurrency(widget.amount)),
-                  _buildRow('Status', '✅ BERHASIL'),
-                ],
-              ),
-
-              pw.SizedBox(height: 20),
-              pw.Divider(),
-              pw.Center(child: pw.Text('Terima kasih telah menggunakan')),
-              pw.Center(child: pw.Text('My Dompet App')),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    // Unduh file PDF (khusus Flutter Web)
-    final Uint8List bytes = await pdf.save();
-    final blob = html.Blob([bytes]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    // ignore: unused_local_variable
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute("download", "bukti_transaksi_$idTransaksi.pdf")
-      ..click();
-    html.Url.revokeObjectUrl(url);
-  }
-
-  pw.TableRow _buildRow(String label, String value) {
-    return pw.TableRow(
-      children: [
-        pw.Padding(
-          padding: const pw.EdgeInsets.symmetric(vertical: 4),
-          child: pw.Text(label,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-        ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.symmetric(vertical: 4),
-          child: pw.Text(value),
-        ),
-      ],
-    );
   }
 
   void _showMoreOptions() {
@@ -116,11 +41,23 @@ class _SuccessScreenState extends State<SuccessScreen> {
         return Wrap(
           children: <Widget>[
             ListTile(
+              leading: const Icon(Icons.share, color: Color(0xFFE91E63)),
+              title: const Text('Bagikan Bukti Transaksi'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fungsi "Bagikan" belum diimplementasikan.')),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.download, color: Color(0xFFE91E63)),
               title: const Text('Unduh Bukti Transaksi'),
               onTap: () {
                 Navigator.pop(context);
-                _unduhBuktiTransaksi();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fungsi "Unduh" belum diimplementasikan.')),
+                );
               },
             ),
           ],
@@ -146,8 +83,10 @@ class _SuccessScreenState extends State<SuccessScreen> {
                 ),
                 const Text(
                   "Detail Transaksi",
-                  style:
-                      TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -163,8 +102,10 @@ class _SuccessScreenState extends State<SuccessScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius:
-                    BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -181,7 +122,10 @@ class _SuccessScreenState extends State<SuccessScreen> {
                     style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 30),
-                  const Text("Total Transaksi", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  const Text(
+                    "Total Transaksi",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     _formatCurrency(widget.amount),
@@ -208,7 +152,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                           children: const [
                             Text("My Dompet App",
                                 style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text("Kirim Saldo",
+                            Text("Topup Saldo",
                                 style: TextStyle(fontSize: 12, color: Colors.grey)),
                           ],
                         ),
