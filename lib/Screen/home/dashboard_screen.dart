@@ -215,7 +215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ).format(nominal);
 
                     return transactionTile(jenis, keterangan, '$formattedNominal | $waktu');
-                  }).toList(),
+                  }),
               ],
             ),
           ),

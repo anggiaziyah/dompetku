@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'succestopup_screen.dart';
 
 class TopupScreen extends StatefulWidget {
+  const TopupScreen({super.key});
+
   @override
   _TopupScreenState createState() => _TopupScreenState();
 }

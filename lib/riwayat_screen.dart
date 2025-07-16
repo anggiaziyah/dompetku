@@ -7,6 +7,8 @@ import 'package:universal_html/html.dart' as html;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RiwayatScreen extends StatefulWidget {
+  const RiwayatScreen({super.key});
+
   @override
   _RiwayatScreenState createState() => _RiwayatScreenState();
 }

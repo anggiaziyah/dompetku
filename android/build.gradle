@@ -1,8 +1,4 @@
-
-
 buildscript {
-    // Tentukan versi Kotlin yang akan digunakan.
-    // Sesuaikan jika proyek Anda memerlukan versi spesifik.
     ext.kotlin_version = '1.9.20'
     repositories {
         google()
@@ -10,13 +6,15 @@ buildscript {
     }
 
     dependencies {
-        // Ini adalah baris paling penting untuk diperbaiki.
-        // Menggunakan versi Android Gradle Plugin yang lebih modern.
         classpath 'com.android.tools.build:gradle:8.2.0'
-
-        // Menggunakan plugin Kotlin sesuai versi yang didefinisikan di atas.
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+}
+
+ext {
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    minSdkVersion = 21
 }
 
 allprojects {

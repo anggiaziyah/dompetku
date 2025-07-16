@@ -177,7 +177,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    DateFormat('d MMMM yyyy • HH:mm', 'id_ID').format(DateTime.now()) + ' WIB',
+                    '${DateFormat('d MMMM yyyy • HH:mm', 'id_ID').format(DateTime.now())} WIB',
                     style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 30),

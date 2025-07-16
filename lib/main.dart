@@ -16,7 +16,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 // Import semua halaman yang akan digunakan
 import 'Screen/auth/login_screen.dart';
 import 'Screen/auth/signup_screen.dart';
-
+ 
 // Kelas ThemeNotifier tetap sama
 class ThemeNotifier with ChangeNotifier {
   ThemeMode _themeMode;

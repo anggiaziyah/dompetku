@@ -4,11 +4,10 @@ import java.io.FileInputStream
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-// Tambahkan blok ini untuk membaca file key.properties
+// Membaca file key.properties untuk penandatanganan rilis
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
@@ -16,8 +15,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.dompetku"
-    compileSdk = flutter.compileSdkVersion
+    namespace = "com.aplikasi.dompet"
+    compileSdkVersion rootProject.ext.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -29,7 +28,6 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
 
-    // Tambahkan blok ini untuk konfigurasi penandatanganan
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -40,19 +38,16 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.dompetku"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        applicationId = "com.aplikasi.dompet"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            // Ubah baris ini untuk menggunakan kunci rilis
             signingConfig = signingConfigs.release
-            
-            // Opsional, tapi sangat disarankan untuk mengurangi ukuran aplikasi
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
