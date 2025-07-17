@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.aplikasi.dompet"
     compileSdkVersion rootProject.ext.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion "25.1.8937393" 
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

@@ -9,8 +9,6 @@ class LebihScreen extends StatefulWidget {
 
 class _LebihScreenState extends State<LebihScreen> {
   bool _darkMode = false;
-  bool _verifikasi2Langkah = false;
-  bool _sidikJari = true;
   String _bahasa = 'Indonesia';
   final TextEditingController _passwordController = TextEditingController();
 
@@ -150,28 +148,6 @@ class _LebihScreenState extends State<LebihScreen> {
               onTap: _showGantiPasswordDialog,
             ),
             const Divider(),
-
-            // Verifikasi 2 Langkah
-            SwitchListTile(
-              title: const Text('Verifikasi 2 Langkah'),
-              secondary: const Icon(Icons.verified_user),
-              value: _verifikasi2Langkah,
-              onChanged: (val) {
-                setState(() => _verifikasi2Langkah = val);
-                _showSnackbar('Verifikasi 2 Langkah ${val ? "Aktif" : "Nonaktif"}');
-              },
-            ),
-
-            // Sidik Jari
-            SwitchListTile(
-              title: const Text('Gunakan Sidik Jari'),
-              secondary: const Icon(Icons.fingerprint),
-              value: _sidikJari,
-              onChanged: (val) {
-                setState(() => _sidikJari = val);
-                _showSnackbar('Sidik Jari ${val ? "Diaktifkan" : "Dinonaktifkan"}');
-              },
-            ),
           ],
         ),
       ),

@@ -1,5 +1,9 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:universal_html/html.dart' as html;
 
 class SuccessTopupScreen extends StatefulWidget {
   final String amount;
@@ -11,11 +15,6 @@ class SuccessTopupScreen extends StatefulWidget {
 }
 
 class _SuccessTopupScreenState extends State<SuccessTopupScreen> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   String _formatCurrency(String amount) {
     try {
       final number = double.parse(amount);
@@ -30,6 +29,75 @@ class _SuccessTopupScreenState extends State<SuccessTopupScreen> {
     Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
   }
 
+  Future<void> _unduhBuktiTransaksi() async {
+    final pdf = pw.Document();
+    final now = DateTime.now();
+    final formattedDate = DateFormat('d MMMM yyyy - HH:mm', 'id_ID').format(now);
+    final idTransaksi =
+        "TRX${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour}${now.minute}";
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a6,
+        build: (context) => pw.Padding(
+          padding: const pw.EdgeInsets.all(16),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Center(
+                child: pw.Text('MY DOMPET APP',
+                    style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.Center(child: pw.Text('BUKTI TRANSAKSI')),
+              pw.SizedBox(height: 10),
+              pw.Divider(),
+              pw.Table(
+                columnWidths: {
+                  0: pw.FlexColumnWidth(3),
+                  1: pw.FlexColumnWidth(5),
+                },
+                children: [
+                  _buildRow('Tanggal', '$formattedDate WIB'),
+                  _buildRow('ID Transaksi', idTransaksi),
+                  _buildRow('Tipe', 'Topup Saldo'),
+                  _buildRow('Jumlah', _formatCurrency(widget.amount)),
+                  _buildRow('Status', '✅ BERHASIL'),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.Divider(),
+              pw.Center(child: pw.Text('Terima kasih telah menggunakan')),
+              pw.Center(child: pw.Text('My Dompet App')),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final Uint8List bytes = await pdf.save();
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", "bukti_topup_$idTransaksi.pdf")
+      ..click();
+    html.Url.revokeObjectUrl(url);
+  }
+
+  pw.TableRow _buildRow(String label, String value) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 4),
+          child: pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(vertical: 4),
+          child: pw.Text(value),
+        ),
+      ],
+    );
+  }
+
   void _showMoreOptions() {
     showModalBottomSheet(
       context: context,
@@ -41,23 +109,11 @@ class _SuccessTopupScreenState extends State<SuccessTopupScreen> {
         return Wrap(
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.share, color: Color(0xFFE91E63)),
-              title: const Text('Bagikan Bukti Transaksi'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fungsi "Bagikan" belum diimplementasikan.')),
-                );
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.download, color: Color(0xFFE91E63)),
               title: const Text('Unduh Bukti Transaksi'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fungsi "Unduh" belum diimplementasikan.')),
-                );
+                _unduhBuktiTransaksi();
               },
             ),
           ],
@@ -83,10 +139,7 @@ class _SuccessTopupScreenState extends State<SuccessTopupScreen> {
                 ),
                 const Text(
                   "Detail Transaksi",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -102,30 +155,24 @@ class _SuccessTopupScreenState extends State<SuccessTopupScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
+                borderRadius:
+                    BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Icon(Icons.check_circle, color: Colors.green, size: 60),
                   const SizedBox(height: 16),
-                  const Text(
-                    "Transaksi Berhasil",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                  const Text("Transaksi Berhasil",
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(
                     '${DateFormat('d MMMM yyyy • HH:mm', 'id_ID').format(DateTime.now())} WIB',
                     style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 30),
-                  const Text(
-                    "Total Transaksi",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
+                  const Text("Total Transaksi",
+                      style: TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 8),
                   Text(
                     _formatCurrency(widget.amount),
